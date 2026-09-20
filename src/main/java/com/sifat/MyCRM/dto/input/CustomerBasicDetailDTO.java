@@ -1,4 +1,4 @@
-package com.sifat.MyCRM.dto;
+package com.sifat.MyCRM.dto.input;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,18 +11,15 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserBasicDetailDTO {
+public class CustomerBasicDetailDTO {
 
     //Full name
-    private String first_name;
-    private String middle_name;
-    private String last_name;
+    private String full_name;
     private String full_name_2;
     private String family_name;
-
-
     private String short_name;
     private String mnemonic;
+
     private String gender; //male, female , third gender
 
     private Integer account_officer;
@@ -31,11 +28,11 @@ public class UserBasicDetailDTO {
     private Integer customer_status; // 1->Individual, 2-> Corporate
     private String industry;
     private Integer language; // 1->Eng, 2-> BD
-    private String residence;
+    private String residence; //All BD
 
     private LocalDate date_of_birth;
     private String nationality;
-    private String nid; //nid_number
+    private String nid_no; //nid_number
 
 
     private String father_name;
