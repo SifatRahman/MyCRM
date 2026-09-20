@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 public class UserService extends BaseService{
 
 
-    private String Hello(){
+    public String Hello(){
         var msg = showBaseName();
         return msg;
     }
