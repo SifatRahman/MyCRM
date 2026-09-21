@@ -1,7 +1,16 @@
-package com.sifat.MyCRM.dto.input;
+package com.sifat.MyCRM.dto.external;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import java.time.LocalDate;
+import java.util.List;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class AMLUSSanctionDataDTO {
 
     private String full_name;
