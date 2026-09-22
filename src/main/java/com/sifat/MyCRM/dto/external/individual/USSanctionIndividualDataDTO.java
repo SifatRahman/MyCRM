@@ -42,6 +42,6 @@ public class USSanctionIndividualDataDTO {
 
     private List<USSanctionIndividualDOBDTO> individual_date_of_birth;
     private List<USSanctionIndividualPOBDataDTO> individual_place_of_birth;
-    private USSanctionIndividualDocDTO individual_document;
+    private List<USSanctionIndividualDocDTO> individual_document;
 
 }

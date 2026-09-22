@@ -1,8 +1,13 @@
 package com.sifat.MyCRM.service;
 
+import com.sifat.MyCRM.dto.external.USSanctionAddressDataDTO;
+import com.sifat.MyCRM.dto.external.USSanctionAliasDTO;
 import com.sifat.MyCRM.dto.external.entity.USSanctionEntityDataDTO;
+import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualDOBDTO;
 import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualDataDTO;
 import com.sifat.MyCRM.dto.external.USSanctionListDataOutDTO;
+import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualDocDTO;
+import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualPOBDataDTO;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -24,20 +29,17 @@ public class SanctionXmlService {
         DocumentBuilderFactory factory =
                 DocumentBuilderFactory.newInstance();
 
-        DocumentBuilder builder =
-                factory.newDocumentBuilder();
+        DocumentBuilder builder = factory.newDocumentBuilder();
 
-        Document document =
-                builder.parse(inputStream);
+        Document document = builder.parse(inputStream);
 
         document.getDocumentElement().normalize();
 
         List<USSanctionIndividualDataDTO> individuals =
                 parseIndividuals(document);
-//
-//        List<USSanctionEntityDataDTO> entities =
-//                parseEntities(document);
-        List<USSanctionEntityDataDTO> entities = new ArrayList<>();
+
+        List<USSanctionEntityDataDTO> entities =
+                parseEntities(document);
 
         return new USSanctionListDataOutDTO(
                 individuals,
@@ -73,60 +75,47 @@ public class SanctionXmlService {
             individual.setHas_interpol_link(getText(element, "HAS_INTERPOL_LINK"));
             individual.setInterpol_link(getText(element, "INTERPOL_LINK"));
 
-            individual.setDesignation(getNestedListValues(
+            individual.setDesignation(getLinearChildrenValuesOfOneElement(
                             element,
                             "DESIGNATION",
                             "VALUE"));
 
             individual.setNationality(
-                    getNestedListValues(
+                    getLinearChildrenValuesOfOneElement(
                             element,
                             "NATIONALITY",
                             "VALUE"));
 
             individual.setList_type(
-                    getNestedListValues(
+                    getLinearChildrenValuesOfOneElement(
                             element,
                             "LIST_TYPE",
                             "VALUE"));
 
             individual.setLast_day_updated(
-                    getNestedListValues(
+                    getLinearChildrenValuesOfOneElement(
                             element,
                             "LAST_DAY_UPDATED",
                             "VALUE"));
 
-
             individual.setLast_reviewed_on(
-                    getNestedListValues(
+                    getLinearChildrenValuesOfOneElement(
                             element,
-                            "NATIONALITY",
+                            "LAST_REVIEWED_ON",
                             "VALUE"));
 
-            individual.setIndividual_alias(
-                    getIndividualAliases(
-                            element,
-                            "INDIVIDUAL_DATE_OF_BIRTH",
-                            "DATE"));
+            individual.setIndividual_alias(getIndividualAliases(element));
 
 
-            individual.setIndividual_address(
-                    getNestedValue(
-                            element,
-                            "INDIVIDUAL_PLACE_OF_BIRTH",
-                            "COUNTRY"));
-            individual.setTitle(getNestedListValues(
+            individual.setIndividual_address(getIndividualAddress(element));
+            individual.setTitle(getLinearChildrenValuesOfOneElement(
                     element,
                     "TITLE",
                     "VALUE"));
-            individual.setIndividual_date_of_birth();
-            individual.setIndividual_place_of_birth();
-            individual.setIndividual_document();
 
-
-
-//            individual.setLow_quality_alias(String.join(", ", individualAlias.get("low")));
-//            individual.setGood_quality_alias(String.join(", ", individualAlias.get("good")));
+            individual.setIndividual_date_of_birth(getIndividualDOB(element));
+            individual.setIndividual_place_of_birth(getIndividualPOB(element));
+            individual.setIndividual_document(getIndividualDOC(element));
 
             individuals.add(individual);
         }
@@ -134,57 +123,65 @@ public class SanctionXmlService {
         return individuals;
     }
 
-//    private List<USSanctionEntityDataDTO> parseEntities(
-//            Document document) {
-//
-//        List<USSanctionEntityDataDTO> entities =
-//                new ArrayList<>();
-//
-//        NodeList nodes =
-//                document.getElementsByTagName("ENTITY");
-//
-//        for (int i = 0; i < nodes.getLength(); i++) {
-//
-//            Element element =
-//                    (Element) nodes.item(i);
-//
-//            USSanctionEntityDataDTO entity =
-//                    new USSanctionEntityDataDTO();
-//
-//            entity.setDataId(
-//                    getText(element, "DATAID"));
-//
-//            entity.setFirstName(
-//                    getText(element, "FIRST_NAME"));
-//
-//            entity.setUnListType(
-//                    getText(element, "UN_LIST_TYPE"));
-//
-//            entity.setReferenceNumber(
-//                    getText(element, "REFERENCE_NUMBER"));
-//
-//            entity.setListedOn(
-//                    getText(element, "LISTED_ON"));
-//
-//            entity.setComments(
-//                    getText(element, "COMMENTS1"));
-//
-//            entity.setAliases(
-//                    getEntityAliases(
-//                            element,
-//                            "ENTITY_ALIAS"));
-//
-//            entities.add(entity);
-//        }
-//
-//        return entities;
-//    }
 
-    private String getText(
-            Element parent,
+
+    private List<USSanctionEntityDataDTO> parseEntities(Document document) {
+
+        List<USSanctionEntityDataDTO> entities = new ArrayList<>();
+
+        NodeList nodes = document.getElementsByTagName("ENTITY");
+
+        for (int i = 0; i < nodes.getLength(); i++) {
+
+            Element element = (Element) nodes.item(i);
+
+            USSanctionEntityDataDTO entity = new USSanctionEntityDataDTO();
+
+            entity.setData_id(getText(element, "DATAID"));
+            entity.setVersion_no(getText(element, "VERSIONNUM"));
+            entity.setFirst_name(getText(element, "FIRST_NAME"));
+
+            entity.setUn_list_type(getText(element, "UN_LIST_TYPE"));
+            entity.setReference_number(getText(element, "REFERENCE_NUMBER"));
+            entity.setListed_on(getText(element, "LISTED_ON"));
+            entity.setName_original_script(getText(element, "NAME_ORIGINAL_SCRIPT"));
+            entity.setComments1(getText(element, "COMMENTS1"));
+            entity.setHas_interpol_link(getText(element, "HAS_INTERPOL_LINK"));
+            entity.setInterpol_link(getText(element, "INTERPOL_LINK"));
+
+            entity.setList_type(
+                    getLinearChildrenValuesOfOneElement(
+                            element,
+                            "LIST_TYPE",
+                            "VALUE"));
+
+            entity.setLast_day_updated(
+                    getLinearChildrenValuesOfOneElement(
+                            element,
+                            "LAST_DAY_UPDATED",
+                            "VALUE"));
+
+
+            entity.setLast_reviewed_on(
+                    getLinearChildrenValuesOfOneElement(
+                            element,
+                            "LAST_REVIEWED_ON",
+                            "VALUE"));
+
+            entity.setEntity_alias(getIndividualAliases(element));
+
+            entity.setEntity_address(getIndividualAddress(element));
+            entities.add(entity);
+        }
+
+        return entities;
+    }
+
+
+    private String getText(Element element,
             String tagName) {
 
-        NodeList nodes = parent.getElementsByTagName(tagName);
+        NodeList nodes = element.getElementsByTagName(tagName);
         if (nodes.getLength() == 0) {
             return "";
         }
@@ -195,32 +192,17 @@ public class SanctionXmlService {
         return value.isEmpty() ? "" : value;
     }
 
-    private String getNestedFirstValue(
-            Element parent,
-            String parentTag,
-            String childTag) {
 
-        NodeList parents = parent.getElementsByTagName(parentTag);
-        if (parents.getLength() == 0) {
-            return "";
-        }
-        Element parentElement = (Element) parents.item(0);
-
-        return getText(
-                parentElement,
-                childTag);
-    }
-
-    private List<String> getNestedListValues(Element individualElement,
-                                       String parentTag,
+    private List<String> getLinearChildrenValuesOfOneElement(Element parentElement,
+                                       String elementTag,
                                        String childTag){
         List<String> values = new ArrayList<>();
-        NodeList parents = individualElement.getElementsByTagName(parentTag);
-        if(parents.getLength()==0){
+        NodeList foundElements = parentElement.getElementsByTagName(elementTag);
+        if(foundElements.getLength()==0){
             return values;
         }
 
-        Element innerParentElement = (Element) parents.item(0);
+        Element innerParentElement = (Element) foundElements.item(0);
         NodeList children = innerParentElement.getElementsByTagName(childTag);
 
         for (int i = 0; i < children.getLength(); i++) {
@@ -235,49 +217,101 @@ public class SanctionXmlService {
         return values;
     }
 
-    private HashMap<String,List<String>> getIndividualAliases(Element parent, String aliasTag) {
-        HashMap<String,List<String>> aliases = new HashMap<>();
-        List<String> aliasesGood = new ArrayList<>();
-        List<String> aliasesLow = new ArrayList<>();
+    private List<USSanctionAliasDTO> getIndividualAliases(Element individual) {
+        List<USSanctionAliasDTO> aliases = new ArrayList<>();
 
-        NodeList nodes = parent.getElementsByTagName(aliasTag);
+        NodeList nodes = individual.getElementsByTagName("INDIVIDUAL_ALIAS");
 
         for (int i = 0; i < nodes.getLength(); i++) {
-
             Element alias = (Element) nodes.item(i);
-            String aliasQuality = getText(alias, "QUALITY");
-            String aliasName = getText(alias, "ALIAS_NAME");
-
-            if (aliasQuality != null) {
-                if(aliasQuality.equals("Good")){
-                    aliasesGood.add(aliasName);
-                }else{
-                    aliasesLow.add(aliasName);
-                }
-            }
+            USSanctionAliasDTO sanctionAliasDTO = new USSanctionAliasDTO();
+            sanctionAliasDTO.setQuality(getText(alias, "QUALITY"));
+            sanctionAliasDTO.setAlias_name(getText(alias, "ALIAS_NAME"));
+            aliases.add(sanctionAliasDTO);
         }
-        aliases.put("Good",aliasesGood);
-        aliases.put("Low",aliasesLow);
         return aliases;
     }
 
-    private List<String> getEntityAliases(
-            Element parent,
-            String aliasTag) {
+    private List<USSanctionAddressDataDTO> getIndividualAddress(Element individual) {
+        List<USSanctionAddressDataDTO> aliases = new ArrayList<>();
 
-        List<String> aliases = new ArrayList<>();
-        NodeList nodes = parent.getElementsByTagName(aliasTag);
+        NodeList nodes = individual.getElementsByTagName("INDIVIDUAL_ADDRESS");
 
         for (int i = 0; i < nodes.getLength(); i++) {
-
             Element alias = (Element) nodes.item(i);
-            String aliasName = getText(alias, "ALIAS_NAME");
 
-            if (aliasName != null) {
-                aliases.add(aliasName);
-            }
+            USSanctionAddressDataDTO addressDataDTO = new USSanctionAddressDataDTO();
+            addressDataDTO.setStreet(getText(alias, "STREET"));
+            addressDataDTO.setCity(getText(alias, "CITY"));
+            addressDataDTO.setZip_code(getText(alias, "ZIP_CODE"));
+            addressDataDTO.setState_province(getText(alias, "STATE_PROVINCE"));
+            addressDataDTO.setCountry(getText(alias, "COUNTRY"));
+            addressDataDTO.setNote(getText(alias, "NOTE"));
+
+            aliases.add(addressDataDTO);
         }
-
         return aliases;
+    }
+
+    private List<USSanctionIndividualDocDTO> getIndividualDOC(Element individual) {
+        List<USSanctionIndividualDocDTO> docDTOS = new ArrayList<>();
+        NodeList nodes = individual.getElementsByTagName("INDIVIDUAL_DOCUMENT");
+
+        for (int i = 0; i < nodes.getLength(); i++) {
+            Element alias = (Element) nodes.item(i);
+
+            USSanctionIndividualDocDTO docDTO = new USSanctionIndividualDocDTO();
+            docDTO.setType_of_document(getText(alias, "TYPE_OF_DOCUMENT"));
+            docDTO.setType_of_document2(getText(alias, "TYPE_OF_DOCUMENT2"));
+            docDTO.setNumber(getText(alias, "NUMBER"));
+            docDTO.setIssuing_country(getText(alias, "ISSUING_COUNTRY"));
+            docDTO.setDate_of_issue(getText(alias, "DATE_OF_ISSUE"));
+            docDTO.setDate_of_expiry(getText(alias, "DATE_OF_EXPIRY"));
+            docDTO.setCity_of_issue(getText(alias, "CITY_OF_ISSUE"));
+            docDTO.setCountry_of_issue(getText(alias, "COUNTRY_OF_ISSUE"));
+            docDTO.setNote(getText(alias, "NOTE"));
+
+            docDTOS.add(docDTO);
+        }
+        return docDTOS;
+    }
+
+
+
+    private List<USSanctionIndividualPOBDataDTO> getIndividualPOB(Element individual) {
+        List<USSanctionIndividualPOBDataDTO> docDTOS = new ArrayList<>();
+        NodeList nodes = individual.getElementsByTagName("INDIVIDUAL_PLACE_OF_BIRTH");
+
+        for (int i = 0; i < nodes.getLength(); i++) {
+            Element alias = (Element) nodes.item(i);
+
+            USSanctionIndividualPOBDataDTO docDTO = new USSanctionIndividualPOBDataDTO();
+            docDTO.setCity(getText(alias, "CITY"));
+            docDTO.setState_province(getText(alias, "STATE_PROVINCE"));
+            docDTO.setCountry(getText(alias, "COUNTRY"));
+            docDTOS.add(docDTO);
+        }
+        return docDTOS;
+    }
+    // ---ok
+
+    private List<USSanctionIndividualDOBDTO> getIndividualDOB(Element individual) {
+        List<USSanctionIndividualDOBDTO> docDTOS = new ArrayList<>();
+        NodeList nodes = individual.getElementsByTagName("INDIVIDUAL_DATE_OF_BIRTH");
+
+        for (int i = 0; i < nodes.getLength(); i++) {
+            Element alias = (Element) nodes.item(i);
+
+            USSanctionIndividualDOBDTO docDTO = new USSanctionIndividualDOBDTO();
+            docDTO.setType_of_date(getText(alias, "TYPE_OF_DATE"));
+            docDTO.setDate(getText(alias, "DATE"));
+            docDTO.setFrom_year(getText(alias, "FROM_YEAR"));
+            docDTO.setTo_year(getText(alias, "TO_YEAR"));
+            docDTO.setYear(getText(alias, "YEAR"));
+            docDTO.setNote(getText(alias, "NOTE"));
+
+            docDTOS.add(docDTO);
+        }
+        return docDTOS;
     }
 }
