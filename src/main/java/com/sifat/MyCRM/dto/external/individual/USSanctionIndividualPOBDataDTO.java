@@ -1,4 +1,4 @@
-package com.sifat.MyCRM.dto.external;
+package com.sifat.MyCRM.dto.external.individual;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,5 +13,4 @@ public class USSanctionIndividualPOBDataDTO {
     private String country;
     private String state_province;
     private String city;
-
 }

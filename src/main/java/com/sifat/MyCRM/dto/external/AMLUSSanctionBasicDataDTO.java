@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AMLUSSanctionDataDTO {
+public class AMLUSSanctionBasicDataDTO {
 
     private String full_name;
     private LocalDate date_of_birth;

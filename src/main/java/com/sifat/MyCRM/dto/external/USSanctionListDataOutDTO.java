@@ -1,5 +1,7 @@
 package com.sifat.MyCRM.dto.external;
 
+import com.sifat.MyCRM.dto.external.entity.USSanctionEntityDataDTO;
+import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualDataDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

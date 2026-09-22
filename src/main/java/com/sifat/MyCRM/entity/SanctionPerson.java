@@ -1,11 +1,9 @@
 //package com.sifat.MyCRM.entity;
 //
 //
-//import jakarta.persistence.*;
-//
 //@Entity
 //@Table(name = "student")
-//public class SanctionPerson {
+//public class SanctionedIndividual {
 //    @Id
 //    @GeneratedValue(strategy = GenerationType.IDENTITY)
 //    private int id;

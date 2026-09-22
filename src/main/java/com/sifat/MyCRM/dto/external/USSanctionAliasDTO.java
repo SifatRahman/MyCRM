@@ -9,12 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class USSanctionIndividualDocDTO {
-
-    private String type_of_document;
-    private String number;
-    private String issuing_country;
-    private String date_of_issue;
-    private String note;
-
+public class USSanctionAliasDTO {
+    private String quality;
+    private String alias_name;
 }
