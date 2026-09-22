@@ -11,9 +11,11 @@ import lombok.Setter;
 @AllArgsConstructor
 public class USSanctionIndividualDOBDTO {
     private String type_of_date; //EXACT, BETWEEN
+    private String date;
     private String from_year;
     private String to_year;
     private String year;
+    private String note;
 
 
 }

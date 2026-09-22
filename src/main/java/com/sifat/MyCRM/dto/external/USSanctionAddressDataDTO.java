@@ -13,6 +13,7 @@ public class USSanctionAddressDataDTO {
     private String street;
     private String city;
     private String zip_code;
+    private String state_province;
     private String country;
     private String note;
 }
