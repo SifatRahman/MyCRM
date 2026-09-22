@@ -104,10 +104,9 @@ public class SanctionXmlService {
                             "LAST_REVIEWED_ON",
                             "VALUE"));
 
-            individual.setIndividual_alias(getIndividualAliases(element));
+            individual.setIndividual_alias(getAliases(element,"INDIVIDUAL"));
+            individual.setIndividual_address(getAddress(element,"INDIVIDUAL"));
 
-
-            individual.setIndividual_address(getIndividualAddress(element));
             individual.setTitle(getLinearChildrenValuesOfOneElement(
                     element,
                     "TITLE",
@@ -168,9 +167,9 @@ public class SanctionXmlService {
                             "LAST_REVIEWED_ON",
                             "VALUE"));
 
-            entity.setEntity_alias(getIndividualAliases(element));
+            entity.setEntity_alias(getAliases(element,"ENTITY"));
 
-            entity.setEntity_address(getIndividualAddress(element));
+            entity.setEntity_address(getAddress(element,"ENTITY"));
             entities.add(entity);
         }
 
@@ -217,10 +216,10 @@ public class SanctionXmlService {
         return values;
     }
 
-    private List<USSanctionAliasDTO> getIndividualAliases(Element individual) {
+    private List<USSanctionAliasDTO> getAliases(Element individual, String customerType) {
         List<USSanctionAliasDTO> aliases = new ArrayList<>();
 
-        NodeList nodes = individual.getElementsByTagName("INDIVIDUAL_ALIAS");
+        NodeList nodes = individual.getElementsByTagName(String.format(customerType+"_ALIAS"));
 
         for (int i = 0; i < nodes.getLength(); i++) {
             Element alias = (Element) nodes.item(i);
@@ -232,10 +231,10 @@ public class SanctionXmlService {
         return aliases;
     }
 
-    private List<USSanctionAddressDataDTO> getIndividualAddress(Element individual) {
+    private List<USSanctionAddressDataDTO> getAddress(Element individual, String customerType) {
         List<USSanctionAddressDataDTO> aliases = new ArrayList<>();
 
-        NodeList nodes = individual.getElementsByTagName("INDIVIDUAL_ADDRESS");
+        NodeList nodes = individual.getElementsByTagName(String.format(customerType+"_ADDRESS"));
 
         for (int i = 0; i < nodes.getLength(); i++) {
             Element alias = (Element) nodes.item(i);
