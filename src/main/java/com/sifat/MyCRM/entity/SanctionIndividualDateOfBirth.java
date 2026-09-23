@@ -1,5 +1,6 @@
 package com.sifat.MyCRM.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,7 +19,8 @@ public class SanctionIndividualDateOfBirth {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "individual_id", nullable = false)
-    private SanctionIndividual individualId;
+    @JsonBackReference
+    private SanctionIndividual individual;
 
     @Column(name = "type_of_date")
     private String type_of_date; //EXACT, BETWEEN

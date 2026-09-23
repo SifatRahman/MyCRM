@@ -28,7 +28,7 @@ public class SanctionEntity {
     @Column(name = "data_id", unique = true, nullable = false)
     private String dataId;
 
-    @Column(name = "version_no", unique = true, nullable = false)
+    @Column(name = "version_no")
     private String versionNo;
 
     @Column(name = "first_name", length = 512)

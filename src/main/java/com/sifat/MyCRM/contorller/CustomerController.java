@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -40,8 +41,8 @@ public class CustomerController {
 
     @Tag(name = "CRM003 : save xml to DB")
     @PostMapping("/save/sanction-data")
-    public ResponseEntity<SanctionIndividual> savedSanctionData (@RequestParam("file") MultipartFile file) throws Exception {
-        SanctionIndividual result = sanctionService.savedSanctionData(file.getInputStream());
+    public ResponseEntity<List<SanctionIndividual>> savedSanctionData (@RequestParam("file") MultipartFile file) throws Exception {
+        List<SanctionIndividual> result = sanctionService.savedSanctionData(file.getInputStream());
         return ResponseEntity.ok(result);
     }
 
