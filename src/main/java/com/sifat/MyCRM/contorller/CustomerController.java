@@ -1,5 +1,6 @@
 package com.sifat.MyCRM.contorller;
 
+import com.sifat.MyCRM.dto.external.USSanctionListDBOutDTO;
 import com.sifat.MyCRM.dto.external.USSanctionListDataOutDTO;
 import com.sifat.MyCRM.dto.input.CustomerAMLIndividualBasicInDTO;
 import com.sifat.MyCRM.entity.SanctionIndividual;
@@ -41,8 +42,8 @@ public class CustomerController {
 
     @Tag(name = "CRM003 : save xml to DB")
     @PostMapping("/save/sanction-data")
-    public ResponseEntity<List<SanctionIndividual>> savedSanctionData (@RequestParam("file") MultipartFile file) throws Exception {
-        List<SanctionIndividual> result = sanctionService.savedSanctionData(file.getInputStream());
+    public ResponseEntity<USSanctionListDBOutDTO> savedSanctionData (@RequestParam("file") MultipartFile file) throws Exception {
+        USSanctionListDBOutDTO result = sanctionService.savedSanctionData(file.getInputStream());
         return ResponseEntity.ok(result);
     }
 
