@@ -92,6 +92,8 @@ public class SanctionService extends BaseService {
 //        sanctionIndividual.setDesignations(sanctionIndividualDesignations);
 //        sanctionIndividual.setDesignations(sanctionIndividualDesignations);
 //        sanctionIndividual.setDesignations(sanctionIndividualDesignations);
+//        sanctionIndividual.setDesignations(sanctionIndividualDesignations);
+//        sanctionIndividual.setDesignations(sanctionIndividualDesignations);
 
                     return sanctionIndividual;
                 }).toList();
