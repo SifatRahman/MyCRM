@@ -19,7 +19,7 @@ public class SanctionEntityListType {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "entity_id", nullable = false)
-    private SanctionEntity entityId;
+    private SanctionEntity entity;
 
     @Column(name = "list_type")
     private String list_type;
