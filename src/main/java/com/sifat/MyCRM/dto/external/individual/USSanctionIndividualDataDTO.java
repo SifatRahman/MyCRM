@@ -25,8 +25,8 @@ public class USSanctionIndividualDataDTO {
     private String reference_number;
     private String listed_on;
     private String name_original_script;
-    private String comments1; //other info
-    private String has_interpol_link; //YES,NO
+    private String comments1;
+    private String has_interpol_link;
     private String interpol_link;
 
     private List<String> designation;
@@ -35,7 +35,7 @@ public class USSanctionIndividualDataDTO {
     private List<String> last_day_updated;
     private List<String> last_reviewed_on;
 
-    //individual_aliases
+
     private List<USSanctionAliasDTO> individual_alias;
     private List<USSanctionAddressDataDTO> individual_address;
     private List<String> title;

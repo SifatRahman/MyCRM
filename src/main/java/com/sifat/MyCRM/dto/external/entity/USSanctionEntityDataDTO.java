@@ -21,8 +21,8 @@ public class USSanctionEntityDataDTO {
     private String reference_number;
     private String listed_on;
     private String name_original_script;
-    private String comments1; //other info
-    private String has_interpol_link; //YES,NO
+    private String comments1;
+    private String has_interpol_link;
     private String interpol_link;
     private List<String> list_type;
     private List<String> last_day_updated;

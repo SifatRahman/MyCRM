@@ -3,23 +3,24 @@ package com.sifat.MyCRM.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+
 @Entity
-@Table(name = "sanction_individual_designation")
+@Table(name = "sanction_entity_list_type")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class SanctionIndividualDesignation {
+public class SanctionEntityListType {
 
     @Id
     @Column(name = "id", nullable = false, length = 128)
     private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "individual_id", nullable = false)
-    private SanctionIndividual individualId;
+    @JoinColumn(name = "entity_id", nullable = false)
+    private SanctionEntity entityId;
 
-    @Column(name = "designation")
-    private String designation;
+    @Column(name = "list_type")
+    private String list_type;
 }
