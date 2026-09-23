@@ -21,7 +21,7 @@ import java.util.List;
 public class SanctionIndividual {
 
     @Id
-    @Column(name = "id", unique = true, nullable = false)
+    @Column(name = "id", nullable = false, length = 128)
     private String id;
 
     @Column(name = "data_id", unique = true, nullable = false)
@@ -60,7 +60,7 @@ public class SanctionIndividual {
     @Column(name = "has_interpol_link")
     private String hasInterpolLink;
 
-    @Column(name = "interpol_link", length = 512)
+    @Column(name = "interpol_link", length = 1200)
     private String interpolLink;
 
     @OneToMany(
@@ -94,7 +94,7 @@ public class SanctionIndividual {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
-    private List<SanctionIndividualLastDayUpdated> lastDayUpdateds = new ArrayList<>();
+    private List<SanctionIndividualLastDayUpdated> lastDayUpdated = new ArrayList<>();
 
     @OneToMany(
             mappedBy = "individualId",
@@ -102,19 +102,55 @@ public class SanctionIndividual {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
-    private List<SanctionIndividualDesignation> lastReviewedOns = new ArrayList<>();
+    private List<SanctionIndividualLastReviewedOn> lastReviewedOns = new ArrayList<>();
 
+    @OneToMany(
+            mappedBy = "individualId",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<SanctionAlias> individualAlias = new ArrayList<>();
 
-    @Column(name = "nationality", length = 512)
-    private String nationality;
+    @OneToMany(
+            mappedBy = "individualId",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<SanctionAddress> individualAddress = new ArrayList<>();
 
-    @Column(name = "date_of_birth", length = 512)
-    private String dateOfBirth;
+    @OneToMany(
+            mappedBy = "individualId",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<SanctionIndividualTitle> titles = new ArrayList<>();
 
-    @Column(name = "place_of_birth", length = 1000)
-    private String placeOfBirth;
+    @OneToMany(
+            mappedBy = "individualId",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<SanctionIndividualDateOfBirth> individualDateOfBirth = new ArrayList<>();
 
-    @Column(name = "last_updated")
-    private String lastUpdated;
+    @OneToMany(
+            mappedBy = "individualId",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<SanctionIndividualPlaceOfBirth> individual_place_of_birth = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "individualId",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<SanctionIndividualDocument> individual_document = new ArrayList<>();
+
 
 }

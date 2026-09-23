@@ -3,14 +3,15 @@ package com.sifat.MyCRM.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+
 @Entity
-@Table(name = "sanction_individual_designation")
+@Table(name = "sanction_individual_last_day_updated")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class SanctionIndividualDesignation {
+public class SanctionIndividualLastDayUpdated {
 
     @Id
     @Column(name = "id", nullable = false, length = 128)
@@ -20,6 +21,6 @@ public class SanctionIndividualDesignation {
     @JoinColumn(name = "individual_id", nullable = false)
     private SanctionIndividual individualId;
 
-    @Column(name = "designation")
-    private String designation;
+    @Column(name = "last_day_updated")
+    private String lastDayUpdated;
 }
