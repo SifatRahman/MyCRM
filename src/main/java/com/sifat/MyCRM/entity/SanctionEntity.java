@@ -57,7 +57,7 @@ public class SanctionEntity {
 
 
     @OneToMany(
-            mappedBy = "entityId",
+            mappedBy = "entity",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.LAZY
@@ -65,7 +65,7 @@ public class SanctionEntity {
     private List<SanctionEntityListType> listTypes = new ArrayList<>();
 
     @OneToMany(
-            mappedBy = "entityId",
+            mappedBy = "entity",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.LAZY
@@ -73,7 +73,7 @@ public class SanctionEntity {
     private List<SanctionEntityLastDayUpdated> lastDayUpdated = new ArrayList<>();
 
     @OneToMany(
-            mappedBy = "entityId",
+            mappedBy = "entity",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.LAZY
@@ -81,7 +81,7 @@ public class SanctionEntity {
     private List<SanctionEntityLastReviewedOn> lastReviewedOns = new ArrayList<>();
 
     @OneToMany(
-            mappedBy = "entityId",
+            mappedBy = "entity",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.LAZY
@@ -89,7 +89,7 @@ public class SanctionEntity {
     private List<SanctionAlias> entityAlias = new ArrayList<>();
 
     @OneToMany(
-            mappedBy = "entityId",
+            mappedBy = "entity",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.LAZY

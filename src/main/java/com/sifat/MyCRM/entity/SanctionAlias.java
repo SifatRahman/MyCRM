@@ -24,7 +24,7 @@ public class SanctionAlias {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "entity_id")
-    private SanctionEntity entityId;
+    private SanctionEntity entity;
 
     @Column(name = "customer_type", nullable = false)
     private String customerType;

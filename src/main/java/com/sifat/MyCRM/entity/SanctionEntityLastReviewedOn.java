@@ -21,7 +21,7 @@ public class SanctionEntityLastReviewedOn {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "entity_id", nullable = false)
-    private SanctionEntity entityId;
+    private SanctionEntity entity;
 
     @Column(name = "last_reviewed_on")
     private String lastReviewedOn;
