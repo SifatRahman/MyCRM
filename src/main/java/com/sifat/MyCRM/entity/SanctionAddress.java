@@ -1,5 +1,6 @@
 package com.sifat.MyCRM.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,7 +20,8 @@ public class SanctionAddress {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "individual_id")
-    private SanctionIndividual individualId;
+    @JsonBackReference
+    private SanctionIndividual individual;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "entity_id")
