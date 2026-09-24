@@ -2,21 +2,18 @@ package com.sifat.MyCRM.contorller;
 
 import com.sifat.MyCRM.dto.external.USSanctionListDBOutDTO;
 import com.sifat.MyCRM.dto.external.USSanctionListDataOutDTO;
-import com.sifat.MyCRM.dto.input.CustomerAMLIndividualBasicInDTO;
-import com.sifat.MyCRM.entity.SanctionIndividual;
+import com.sifat.MyCRM.dto.input.IndividualCustomerCompareInDTO;
+import com.sifat.MyCRM.dto.output.IndividualCustomerCompareResultOutDTO;
 import com.sifat.MyCRM.service.CustomerService;
+import com.sifat.MyCRM.service.SanctionComparisonService;
 import com.sifat.MyCRM.service.SanctionService;
 import com.sifat.MyCRM.service.SanctionXmlService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,6 +23,7 @@ public class CustomerController {
     private final CustomerService customerService;
     private final SanctionXmlService sanctionXmlService;
     private final SanctionService sanctionService;
+    private final SanctionComparisonService sanctionComparisonService;
 
     @Tag(name = "CRM001 : see service health")
     @GetMapping("/test")
@@ -58,6 +56,14 @@ public class CustomerController {
     public String searchSanctionData (){
         return customerService.searchSanctionData();
     }
+
+    @Tag(name = "CRM006 : compare individual customer data")
+    @GetMapping("/compare/individual/sanction-data")
+    public ResponseEntity<IndividualCustomerCompareResultOutDTO> compareIndividualData (@RequestBody @Valid IndividualCustomerCompareInDTO inDTO){
+        IndividualCustomerCompareResultOutDTO outDTO =  sanctionComparisonService.compareIndividualData(inDTO);
+        return ResponseEntity.ok(outDTO);
+    }
+
 
 
 

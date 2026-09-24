@@ -9,6 +9,9 @@ import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualDOBDTO;
 import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualDataDTO;
 import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualDocDTO;
 import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualPOBDataDTO;
+import com.sifat.MyCRM.dto.input.CustomerAMLIndividualPermanentAddressInDTO;
+import com.sifat.MyCRM.dto.input.CustomerBasicDetailDTO;
+import com.sifat.MyCRM.dto.input.IndividualCustomerCompareInDTO;
 import com.sifat.MyCRM.entity.*;
 import com.sifat.MyCRM.repository.SanctionEntityRepository;
 import com.sifat.MyCRM.repository.SanctionIndividualRepository;
@@ -17,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,6 +58,7 @@ public class SanctionService extends BaseService {
                         sanctionIndividual.setComments1(individualXmlDataDTO.getComments1());
                         sanctionIndividual.setHasInterpolLink(individualXmlDataDTO.getHas_interpol_link());
                         sanctionIndividual.setInterpolLink(individualXmlDataDTO.getInterpol_link());
+                        sanctionIndividual.setCreatedAt(LocalDateTime.now());
 
                         List<String> xmlDesignations = individualXmlDataDTO.getDesignation();
                         ArrayList<SanctionIndividualDesignation> sanctionIndividualDesignations = new ArrayList<>();
@@ -295,6 +300,7 @@ public class SanctionService extends BaseService {
                         sanctionentity.setComments1(entityXmlDataDTO.getComments1());
                         sanctionentity.setHasInterpolLink(entityXmlDataDTO.getHas_interpol_link());
                         sanctionentity.setInterpolLink(entityXmlDataDTO.getInterpol_link());
+                        sanctionentity.setCreatedAt(LocalDateTime.now());
 
                         //listTypes
                         List<String> xmlDataDTOListType = entityXmlDataDTO.getList_type();

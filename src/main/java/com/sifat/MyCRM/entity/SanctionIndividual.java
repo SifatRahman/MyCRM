@@ -3,6 +3,8 @@ package com.sifat.MyCRM.entity;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -152,5 +154,6 @@ public class SanctionIndividual {
     )
     private List<SanctionIndividualDocument> individual_document = new ArrayList<>();
 
-
+    @Column(name = "created_at",nullable = false)
+    private LocalDateTime createdAt;
 }
