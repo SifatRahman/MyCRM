@@ -20,7 +20,7 @@ public class CustomerBasicDetailDTO {
     private String short_name;
     private String mnemonic;
 
-    private String gender; //male, female , third gender
+    private String gender; //male, female, third gender
 
     private Integer account_officer;
     private Integer sector;
