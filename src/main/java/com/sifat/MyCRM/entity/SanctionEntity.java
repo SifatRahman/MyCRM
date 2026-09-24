@@ -1,5 +1,6 @@
 package com.sifat.MyCRM.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ public class SanctionEntity {
     @Column(name = "listed_on")
     private String listedOn;
 
-    @Column(name = "name_original_script")
+    @Column(name = "name_original_script", length = 1200)
     private String nameOriginalScript;
 
     @Column(name = "comments1", columnDefinition = "TEXT")
@@ -62,6 +63,7 @@ public class SanctionEntity {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
+    @JsonManagedReference
     private List<SanctionEntityListType> listTypes = new ArrayList<>();
 
     @OneToMany(
@@ -70,6 +72,7 @@ public class SanctionEntity {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
+    @JsonManagedReference
     private List<SanctionEntityLastDayUpdated> lastDayUpdated = new ArrayList<>();
 
     @OneToMany(
@@ -78,6 +81,7 @@ public class SanctionEntity {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
+    @JsonManagedReference
     private List<SanctionEntityLastReviewedOn> lastReviewedOns = new ArrayList<>();
 
     @OneToMany(
@@ -86,6 +90,7 @@ public class SanctionEntity {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
+    @JsonManagedReference
     private List<SanctionAlias> entityAlias = new ArrayList<>();
 
     @OneToMany(
@@ -94,6 +99,7 @@ public class SanctionEntity {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
+    @JsonManagedReference
     private List<SanctionAddress> entityAddress = new ArrayList<>();
 
 }

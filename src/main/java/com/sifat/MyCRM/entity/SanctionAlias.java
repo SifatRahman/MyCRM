@@ -24,6 +24,7 @@ public class SanctionAlias {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "entity_id")
+    @JsonBackReference
     private SanctionEntity entity;
 
     @Column(name = "customer_type", nullable = false)
@@ -32,6 +33,6 @@ public class SanctionAlias {
     @Column(name = "quality")
     private String quality;
 
-    @Column(name = "alias_name")
+    @Column(name = "alias_name",length = 1200)
     private String alias_name;
 }

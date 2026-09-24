@@ -52,7 +52,7 @@ public class SanctionIndividual {
     @Column(name = "listed_on")
     private String listedOn;
 
-    @Column(name = "name_original_script")
+    @Column(name = "name_original_script",length = 1200)
     private String nameOriginalScript;
 
     @Column(name = "comments1", columnDefinition = "TEXT")

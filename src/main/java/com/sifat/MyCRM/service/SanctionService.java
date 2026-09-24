@@ -7,6 +7,7 @@ import com.sifat.MyCRM.dto.external.USSanctionListDataOutDTO;
 import com.sifat.MyCRM.dto.external.entity.USSanctionEntityDataDTO;
 import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualDOBDTO;
 import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualDataDTO;
+import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualDocDTO;
 import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualPOBDataDTO;
 import com.sifat.MyCRM.entity.*;
 import com.sifat.MyCRM.repository.SanctionEntityRepository;
@@ -15,7 +16,6 @@ import com.sifat.MyCRM.utility.CustomerType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -144,8 +144,19 @@ public class SanctionService extends BaseService {
                         sanctionIndividual.setIndividualAlias(individualAliases);
 
 
-                        //individualAlias
+                        //individualAddresses
                         List<USSanctionAddressDataDTO> xmlIndividualAddress = individualXmlDataDTO.getIndividual_address();
+
+                        xmlIndividualAddress = xmlIndividualAddress.stream().filter(e -> {
+                            boolean isNoDataAvailable = e.getCity().isBlank() &&
+                                    e.getCountry().isBlank() &&
+                                    e.getNote().isBlank() &&
+                                    e.getState_province().isBlank() &&
+                                    e.getZip_code().isBlank() &&
+                                    e.getStreet().isBlank();
+                            return !isNoDataAvailable;
+                        }).toList();
+
                         ArrayList<SanctionAddress> individualAddresses = new ArrayList<>();
                         xmlIndividualAddress.forEach(e -> {
                             SanctionAddress individualAddress = SanctionAddress.builder()
@@ -165,7 +176,7 @@ public class SanctionService extends BaseService {
                         sanctionIndividual.setIndividualAddress(individualAddresses);
 
 
-                        //individualAlias
+                        //titles
                         List<String> xmlTitles = individualXmlDataDTO.getTitle();
                         ArrayList<SanctionIndividualTitle> titles = new ArrayList<>();
                         xmlTitles.forEach(e -> {
@@ -181,6 +192,16 @@ public class SanctionService extends BaseService {
 
                         //individualDOB
                         List<USSanctionIndividualDOBDTO> xmlDOB = individualXmlDataDTO.getIndividual_date_of_birth();
+                        xmlDOB = xmlDOB.stream().filter(e -> {
+                        boolean isNoDataAvailable = e.getType_of_date().isBlank() &&
+                                        e.getDate().isBlank() &&
+                                        e.getFrom_year().isBlank() &&
+                                        e.getTo_year().isBlank() &&
+                                        e.getYear().isBlank() &&
+                                        e.getNote().isBlank();
+                        return !isNoDataAvailable;
+                        }).toList();
+
                         ArrayList<SanctionIndividualDateOfBirth> dobs = new ArrayList<>();
                         xmlDOB.forEach(e -> {
                             SanctionIndividualDateOfBirth dob = SanctionIndividualDateOfBirth.builder()
@@ -200,6 +221,13 @@ public class SanctionService extends BaseService {
 
                         //individualDOB
                         List<USSanctionIndividualPOBDataDTO> xmlPOB = individualXmlDataDTO.getIndividual_place_of_birth();
+                        xmlPOB = xmlPOB.stream().filter(e -> {
+                            boolean isNoDataAvailable = e.getCity().isBlank() &&
+                                    e.getCountry().isBlank() &&
+                                    e.getState_province().isBlank();
+                            return !isNoDataAvailable;
+                        }).toList();
+
                         ArrayList<SanctionIndividualPlaceOfBirth> pobs = new ArrayList<>();
                         xmlPOB.forEach(e -> {
                             SanctionIndividualPlaceOfBirth pob = SanctionIndividualPlaceOfBirth.builder()
@@ -212,6 +240,41 @@ public class SanctionService extends BaseService {
                             pobs.add(pob);
                         });
                         sanctionIndividual.setIndividual_place_of_birth(pobs);
+
+
+                        //individualDOB
+                        List<USSanctionIndividualDocDTO> xmlDOCs = individualXmlDataDTO.getIndividual_document();
+                        xmlDOCs = xmlDOCs.stream().filter(e -> {
+                            boolean isNoDataAvailable = e.getType_of_document().isBlank() &&
+                                    e.getType_of_document2().isBlank() &&
+                                    e.getNumber().isBlank() &&
+                                    e.getIssuing_country().isBlank() &&
+                                    e.getDate_of_issue().isBlank() &&
+                                    e.getDate_of_expiry().isBlank() &&
+                                    e.getCity_of_issue().isBlank() &&
+                                    e.getCountry_of_issue().isBlank() &&
+                                    e.getNote().isBlank();
+                            return !isNoDataAvailable;
+                        }).toList();
+
+                        ArrayList<SanctionIndividualDocument> docs = new ArrayList<>();
+                        xmlDOCs.forEach(e -> {
+                            SanctionIndividualDocument doc = SanctionIndividualDocument.builder()
+                                    .id(getUUID())
+                                    .individual(sanctionIndividual)
+                                    .type_of_document(e.getType_of_document())
+                                    .type_of_document2(e.getType_of_document2())
+                                    .number(e.getNumber())
+                                    .issuing_country(e.getIssuing_country())
+                                    .date_of_issue(e.getDate_of_issue())
+                                    .date_of_expiry(e.getDate_of_expiry())
+                                    .city_of_issue(e.getCity_of_issue())
+                                    .country_of_issue(e.getCountry_of_issue())
+                                    .note(e.getNote())
+                                    .build();
+                            docs.add(doc);
+                        });
+                        sanctionIndividual.setIndividual_document(docs);
 
                         return sanctionIndividual;
                     }).toList();
@@ -278,6 +341,11 @@ public class SanctionService extends BaseService {
 
                         //entityAlias
                         List<USSanctionAliasDTO> xmlEntityAlias = entityXmlDataDTO.getEntity_alias();
+                        xmlEntityAlias = xmlEntityAlias.stream().filter(e -> {
+                            boolean isNoDataAvailable = e.getQuality().isBlank() &&
+                                    e.getAlias_name().isBlank();
+                            return !isNoDataAvailable;
+                        }).toList();
                         ArrayList<SanctionAlias> entityAliases = new ArrayList<>();
                         xmlEntityAlias.forEach(e -> {
                             SanctionAlias entityAlias = SanctionAlias.builder()
@@ -295,6 +363,16 @@ public class SanctionService extends BaseService {
 
                         //entityAlias
                         List<USSanctionAddressDataDTO> xmlEntityAddress = entityXmlDataDTO.getEntity_address();
+                        xmlEntityAddress = xmlEntityAddress.stream().filter(e -> {
+                            boolean isNoDataAvailable = e.getCity().isBlank() &&
+                                    e.getCountry().isBlank() &&
+                                    e.getNote().isBlank() &&
+                                    e.getState_province().isBlank() &&
+                                    e.getZip_code().isBlank() &&
+                                    e.getStreet().isBlank();
+                            return !isNoDataAvailable;
+                        }).toList();
+
                         ArrayList<SanctionAddress> entityAddresses = new ArrayList<>();
                         xmlEntityAddress.forEach(e -> {
                             SanctionAddress entityAddress = SanctionAddress.builder()

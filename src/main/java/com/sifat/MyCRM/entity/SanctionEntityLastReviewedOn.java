@@ -1,5 +1,6 @@
 package com.sifat.MyCRM.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,6 +22,7 @@ public class SanctionEntityLastReviewedOn {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "entity_id", nullable = false)
+    @JsonBackReference
     private SanctionEntity entity;
 
     @Column(name = "last_reviewed_on")
