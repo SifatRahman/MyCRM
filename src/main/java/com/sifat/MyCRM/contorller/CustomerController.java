@@ -58,8 +58,8 @@ public class CustomerController {
     }
 
     @Tag(name = "CRM006 : compare individual customer data")
-    @GetMapping("/compare/individual/sanction-data")
-    public ResponseEntity<IndividualCustomerCompareResultOutDTO> compareIndividualData (@RequestBody @Valid IndividualCustomerCompareInDTO inDTO){
+    @PostMapping("/compare/individual/sanction-data")
+    public ResponseEntity<IndividualCustomerCompareResultOutDTO> compareIndividualData (@RequestBody @Valid IndividualCustomerCompareInDTO inDTO) throws Exception {
         IndividualCustomerCompareResultOutDTO outDTO =  sanctionComparisonService.compareIndividualData(inDTO);
         return ResponseEntity.ok(outDTO);
     }

@@ -9,8 +9,7 @@ import java.time.LocalDate;
 @Component
 public class FuzzyMatcher {
 
-    private final JaroWinklerSimilarity jaroWinkler =
-            new JaroWinklerSimilarity();
+    private final JaroWinklerSimilarity jaroWinkler = new JaroWinklerSimilarity();
 
     private final TextNormalizer normalizer;
 
