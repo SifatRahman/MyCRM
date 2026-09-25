@@ -33,6 +33,7 @@ public class CustomerBasicDetailDTO {
     private LocalDate date_of_birth;
     private String nationality;
     private String nid_no; //nid_number
+    private String passport_no; //passport_no
 
 
     private String father_name;

@@ -16,6 +16,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +53,7 @@ public class SanctionComparisonService extends BaseService {
                 double nameScore = fuzzyMatcher.getJaroWinklerSimilarity(customerDetailDTO.getFull_name(), getIndividualFullName(sanctionIndividual));
                 double dobScore = fuzzyMatcher.getIndividualDateSimilarity(customerDetailDTO.getDate_of_birth(), sanctionIndividual.getIndividualDateOfBirth());
                 double nationalityScore = fuzzyMatcher.getIndividualNationalitySimilarity(customerDetailDTO.getNationality(), sanctionIndividual.getNationalities());
+                double docScore = fuzzyMatcher.getIndividualDocumentSimilarity(customerDetailDTO.getNid_no(),customerDetailDTO.getPassport_no(), sanctionIndividual.getIndividual_document());
 
                 double addressScore = fuzzyMatcher.getAddressSimilarity(customerAddressDTO, sanctionIndividual.getIndividualAddress());
                 double pobScore = fuzzyMatcher.getPlaceOfBirthSimilarity(customerAddressDTO, sanctionIndividual.getIndividual_place_of_birth());
@@ -59,20 +61,26 @@ public class SanctionComparisonService extends BaseService {
                 double overallScore = sanctionsScoringEngine.calculate(
                         nameScore,
                         dobScore,
+                        docScore,
                         nationalityScore,
                         addressScore,
                         pobScore
                 );
+                String overallScoreString = String.valueOf(BigDecimal.valueOf(overallScore)
+                        .setScale(2, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100)));
 
                 results.add(new IndividualCustomerCompareResultOutDTO(
-                                null,
-                                customerDetailDTO.getFull_name(),
+                                sanctionIndividual.getId(),
+                                getIndividualFullName(sanctionIndividual),
                                 BigDecimal.valueOf(nameScore).setScale(2, RoundingMode.HALF_UP),
                                 BigDecimal.valueOf(dobScore).setScale(2, RoundingMode.HALF_UP),
+                                BigDecimal.valueOf(docScore).setScale(2, RoundingMode.HALF_UP),
                                 BigDecimal.valueOf(addressScore).setScale(2, RoundingMode.HALF_UP),
                                 BigDecimal.valueOf(pobScore).setScale(2, RoundingMode.HALF_UP),
+                                BigDecimal.valueOf(nationalityScore).setScale(2, RoundingMode.HALF_UP),
                                 BigDecimal.valueOf(overallScore).setScale(2, RoundingMode.HALF_UP),
-                                BigDecimal.valueOf(overallScore).setScale(2, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)),
+                                overallScoreString+"%",
                                 determineStatus(overallScore)
                         )
                 );
@@ -81,7 +89,7 @@ public class SanctionComparisonService extends BaseService {
             return results.stream()
                     .sorted(
                             Comparator.comparing(
-                                    IndividualCustomerCompareResultOutDTO::getIndividual_compare_percentage
+                                    IndividualCustomerCompareResultOutDTO::getOverall_score
                             ).reversed()
                     )
                     .toList();

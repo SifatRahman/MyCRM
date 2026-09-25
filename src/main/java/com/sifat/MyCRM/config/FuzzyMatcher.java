@@ -1,10 +1,7 @@
 package com.sifat.MyCRM.config;
 
 import com.sifat.MyCRM.dto.input.CustomerAMLIndividualPermanentAddressInDTO;
-import com.sifat.MyCRM.entity.SanctionAddress;
-import com.sifat.MyCRM.entity.SanctionIndividualDateOfBirth;
-import com.sifat.MyCRM.entity.SanctionIndividualNationality;
-import com.sifat.MyCRM.entity.SanctionIndividualPlaceOfBirth;
+import com.sifat.MyCRM.entity.*;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 import org.springframework.stereotype.Component;
 
@@ -73,6 +70,33 @@ public class FuzzyMatcher {
 
         for (SanctionIndividualNationality e : sanctionNationalities) {
             double currentSimilarity = customerNationality.equalsIgnoreCase(e.getNationality()) ? 1.00 : 0.00;
+            maxSimilarity = Math.max(maxSimilarity, currentSimilarity);
+        }
+
+        return maxSimilarity;
+    }
+
+    //has work
+    public double getIndividualDocumentSimilarity(
+            String nidNo,
+            String passNo,
+            List<SanctionIndividualDocument> sanctionDocuments) {
+
+        if ((nidNo == null && passNo==null) || sanctionDocuments == null || sanctionDocuments.isEmpty()) {
+            return 0.00;
+        }
+        double maxSimilarity = 0.00;
+
+        for (SanctionIndividualDocument e : sanctionDocuments) {
+            double currentSimilarity = 0.00;
+            assert nidNo != null;
+            if(!nidNo.isBlank()){
+               currentSimilarity = nidNo.equalsIgnoreCase(e.getNumber()) ? 1.00 : 0.00;
+           }
+            if(!passNo.isBlank()){
+                currentSimilarity = passNo.equalsIgnoreCase(e.getNumber()) ? 1.00 : 0.00;
+            }
+
             maxSimilarity = Math.max(maxSimilarity, currentSimilarity);
         }
 
