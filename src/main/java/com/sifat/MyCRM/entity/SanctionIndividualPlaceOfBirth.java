@@ -23,12 +23,12 @@ public class SanctionIndividualPlaceOfBirth {
     @JsonBackReference
     private SanctionIndividual individual;
 
-    @Column(name = "country")
-    private String country;
-
     @Column(name = "state_province")
     private String state_province;
 
     @Column(name = "city")
     private String city;
+
+    @Column(name = "country")
+    private String country;
 }

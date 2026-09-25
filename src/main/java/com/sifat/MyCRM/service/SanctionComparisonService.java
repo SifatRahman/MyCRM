@@ -12,7 +12,7 @@ import com.sifat.MyCRM.utility.SanctionMatchStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -26,13 +26,13 @@ public class SanctionComparisonService extends BaseService {
     private final SanctionIndividualRepository sanctionIndividualRepository;
 
 
-    public IndividualCustomerCompareResultOutDTO compareIndividualData(IndividualCustomerCompareInDTO inDTO) throws Exception {
+    public List<IndividualCustomerCompareResultOutDTO> compareIndividualData(IndividualCustomerCompareInDTO inDTO) throws Exception {
         try {
             CustomerBasicDetailDTO basicDetails = inDTO.getBasic_details();
             CustomerAMLIndividualPermanentAddressInDTO permanentAddress = inDTO.getPermanent_address();
 
             List<IndividualCustomerCompareResultOutDTO> matchingResult = getCustomerSanctionMatchingResult(basicDetails, permanentAddress);
-            return matchingResult.getFirst();
+            return matchingResult;
 
 
         } catch (Exception e) {
@@ -41,42 +41,39 @@ public class SanctionComparisonService extends BaseService {
     }
 
 
-    public List<IndividualCustomerCompareResultOutDTO> getCustomerSanctionMatchingResult(CustomerBasicDetailDTO customerDetail, CustomerAMLIndividualPermanentAddressInDTO customerAddress) throws Exception {
+    public List<IndividualCustomerCompareResultOutDTO> getCustomerSanctionMatchingResult(CustomerBasicDetailDTO customerDetailDTO, CustomerAMLIndividualPermanentAddressInDTO customerAddressDTO) throws Exception {
         try {
             List<SanctionIndividual> sanctionedIndividuals = sanctionIndividualRepository.findAll();
-            CustomerAMLIndividualPermanentAddressInDTO cusAddress = customerAddress;
 
             List<IndividualCustomerCompareResultOutDTO> results = new ArrayList<>();
 
             for (SanctionIndividual sanctionIndividual : sanctionedIndividuals) {
 
-                double nameScore = fuzzyMatcher.nameSimilarity(customerDetail.getFull_name(), getIndividualFullName(sanctionIndividual));
-                double dobScore = fuzzyMatcher.dateSimilarity(customerDetail.getDate_of_birth(), LocalDate.now()); //has works
-                double addressScore = fuzzyMatcher.addressSimilarity(customerAddress.getCountry(), "Bangladesh");
-                double pobScore = fuzzyMatcher.placeOfBirthSimilarity(cusAddress.getCountry(), "Bang");
+                double nameScore = fuzzyMatcher.getJaroWinklerSimilarity(customerDetailDTO.getFull_name(), getIndividualFullName(sanctionIndividual));
+                double dobScore = fuzzyMatcher.getIndividualDateSimilarity(customerDetailDTO.getDate_of_birth(), sanctionIndividual.getIndividualDateOfBirth());
+                double nationalityScore = fuzzyMatcher.getIndividualNationalitySimilarity(customerDetailDTO.getNationality(), sanctionIndividual.getNationalities());
+
+                double addressScore = fuzzyMatcher.getAddressSimilarity(customerAddressDTO, sanctionIndividual.getIndividualAddress());
+                double pobScore = fuzzyMatcher.getPlaceOfBirthSimilarity(customerAddressDTO, sanctionIndividual.getIndividual_place_of_birth());
 
                 double overallScore = sanctionsScoringEngine.calculate(
                         nameScore,
                         dobScore,
+                        nationalityScore,
                         addressScore,
                         pobScore
                 );
 
-                String matchStatus = determineStatus(
-//                        nameScore,
-                        overallScore
-                );
-
                 results.add(new IndividualCustomerCompareResultOutDTO(
                                 null,
-                                customerDetail.getFull_name(),
-                                BigDecimal.valueOf(nameScore).setScale(2, BigDecimal.ROUND_HALF_UP),
-                                BigDecimal.valueOf(dobScore).setScale(2, BigDecimal.ROUND_HALF_UP),
-                                BigDecimal.valueOf(addressScore).setScale(2, BigDecimal.ROUND_HALF_UP),
-                                BigDecimal.valueOf(pobScore).setScale(2, BigDecimal.ROUND_HALF_UP),
-                                BigDecimal.valueOf(overallScore).setScale(2, BigDecimal.ROUND_HALF_UP),
-                                BigDecimal.valueOf(overallScore).setScale(2, BigDecimal.ROUND_HALF_UP).multiply(BigDecimal.valueOf(100)),
-                                matchStatus
+                                customerDetailDTO.getFull_name(),
+                                BigDecimal.valueOf(nameScore).setScale(2, RoundingMode.HALF_UP),
+                                BigDecimal.valueOf(dobScore).setScale(2, RoundingMode.HALF_UP),
+                                BigDecimal.valueOf(addressScore).setScale(2, RoundingMode.HALF_UP),
+                                BigDecimal.valueOf(pobScore).setScale(2, RoundingMode.HALF_UP),
+                                BigDecimal.valueOf(overallScore).setScale(2, RoundingMode.HALF_UP),
+                                BigDecimal.valueOf(overallScore).setScale(2, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)),
+                                determineStatus(overallScore)
                         )
                 );
             }
@@ -93,9 +90,7 @@ public class SanctionComparisonService extends BaseService {
         }
     }
 
-    private String determineStatus(
-            //double nameScore,
-            double overallScore) {
+    private String determineStatus(double overallScore) {
 
 //        if (overallScore >= 0.90 && nameScore >= 0.85) {
 //            return SanctionMatchStatus.HIGH_POTENTIAL_MATCHED.name();

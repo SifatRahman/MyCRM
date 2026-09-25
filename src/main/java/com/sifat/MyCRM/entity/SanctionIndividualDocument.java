@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "sanction_individual_date_birth")
+@Table(name = "sanction_individual_document")
 @Getter
 @Setter
 @NoArgsConstructor
