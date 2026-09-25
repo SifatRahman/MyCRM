@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "sanction_individual_date_birth")
+@Table(name = "sanction_individual_date_of_birth")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,7 +22,7 @@ public class SanctionIndividualDateOfBirth {
     @JsonBackReference
     private SanctionIndividual individual;
 
-    @Column(name = "type_of_date")
+    @Column(name = "type_of_date", nullable = false)
     private String type_of_date; //EXACT, BETWEEN
 
     @Column(name = "date")

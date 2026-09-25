@@ -34,14 +34,14 @@ public class SanctionAddress {
     @Column(name = "street",length = 1200)
     private String street;
 
-    @Column(name = "city",length = 1200)
-    private String city;
-
     @Column(name = "zip_code",length = 1200)
     private String zip_code;
 
     @Column(name = "state_province",length = 1200)
     private String state_province;
+
+    @Column(name = "city",length = 1200)
+    private String city;
 
     @Column(name = "country",length = 1200)
     private String country;

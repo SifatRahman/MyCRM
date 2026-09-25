@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
@@ -59,8 +61,8 @@ public class CustomerController {
 
     @Tag(name = "CRM006 : compare individual customer data")
     @PostMapping("/compare/individual/sanction-data")
-    public ResponseEntity<IndividualCustomerCompareResultOutDTO> compareIndividualData (@RequestBody @Valid IndividualCustomerCompareInDTO inDTO) throws Exception {
-        IndividualCustomerCompareResultOutDTO outDTO =  sanctionComparisonService.compareIndividualData(inDTO);
+    public ResponseEntity<List<IndividualCustomerCompareResultOutDTO>> compareIndividualData (@RequestBody @Valid IndividualCustomerCompareInDTO inDTO) throws Exception {
+        List<IndividualCustomerCompareResultOutDTO> outDTO =  sanctionComparisonService.compareIndividualData(inDTO);
         return ResponseEntity.ok(outDTO);
     }
 
