@@ -5,21 +5,21 @@ import lombok.*;
 
 
 @Entity
-@Table(name = "customer_permanent_address")
+@Table(name = "individual_customer_permanent_address")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CustomerPermanentAddress {
+public class IndividualCustomerPermanentAddress {
 
     @Id
     @Column(name = "id", nullable = false, length = 128)
     private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id",nullable = false)
-    private Customer customer;
+    @JoinColumn(name = "individual_customer_id",nullable = false)
+    private IndividualCustomer individualCustomer;
 
     @Column(name = "country", nullable = false)
     private String country;

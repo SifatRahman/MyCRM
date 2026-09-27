@@ -2,10 +2,8 @@ package com.sifat.MyCRM.contorller;
 
 import com.sifat.MyCRM.dto.external.USSanctionListDBOutDTO;
 import com.sifat.MyCRM.dto.external.USSanctionListDataOutDTO;
-import com.sifat.MyCRM.dto.input.CreateCustomerDTO;
 import com.sifat.MyCRM.dto.input.CreateIndividualCustomerDTO;
 import com.sifat.MyCRM.dto.input.IndividualCustomerCompareInDTO;
-import com.sifat.MyCRM.dto.output.CustomerViewDTO;
 import com.sifat.MyCRM.dto.output.IndividualCustomerCompareResultOutDTO;
 import com.sifat.MyCRM.dto.output.IndividualCustomerViewDTO;
 import com.sifat.MyCRM.service.CustomerService;
@@ -31,33 +29,33 @@ public class CustomerController {
     private final SanctionService sanctionService;
     private final SanctionComparisonService sanctionComparisonService;
 
-    @Tag(name = "CRM001 : see service health")
+    @Tag(name = "CRM001 : see service health")    //done
     @GetMapping("/test")
     public String testApi (){
         return customerService.Hello();
     }
 
-    @Tag(name = "CRM002 : upload un-xml file to view")
+    @Tag(name = "CRM002 : upload un-xml file to view")   //done
     @PostMapping("/upload/sanction/xml-file")
     public ResponseEntity<USSanctionListDataOutDTO> upload(@RequestParam("file") MultipartFile file) throws Exception {
         USSanctionListDataOutDTO result = sanctionXmlService.parseXmlFile(file.getInputStream());
         return ResponseEntity.ok(result);
     }
 
-    @Tag(name = "CRM003 : save xml to DB")
+    @Tag(name = "CRM003 : save xml to DB") //done
     @PostMapping("/save/sanction-data")
     public ResponseEntity<USSanctionListDBOutDTO> savedSanctionData (@RequestParam("file") MultipartFile file) throws Exception {
         USSanctionListDBOutDTO result = sanctionService.savedSanctionData(file.getInputStream());
         return ResponseEntity.ok(result);
     }
 
-    @Tag(name = "CRM004 : view single customer data")
-    @GetMapping("/view/{customer_id}/individual_customer")
-    public IndividualCustomerViewDTO getCustomer (@PathVariable("customer_id") String customerId){
-        return customerService.getCustomer(customerId);
+    @Tag(name = "CRM004 : view single customer data")    //done
+    @GetMapping("/view/{individual_customer_id}/individual_customer")
+    public IndividualCustomerViewDTO getIndividualCustomer (@PathVariable("individual_customer_id") String individualCustomerId){
+        return customerService.getIndividualCustomer(individualCustomerId);
     }
 
-    @Tag(name = "CRM005 : compare individual customer data")
+    @Tag(name = "CRM005 : compare individual customer data (GET SCORE)")    //done
     @PostMapping("/compare/individual/sanction-data")
     public ResponseEntity<List<IndividualCustomerCompareResultOutDTO>> compareIndividualData (@RequestBody @Valid IndividualCustomerCompareInDTO inDTO) throws Exception {
         List<IndividualCustomerCompareResultOutDTO> outDTO =  sanctionComparisonService.compareIndividualData(inDTO);
@@ -66,12 +64,8 @@ public class CustomerController {
 
     @Tag(name = "CRM004 : individual customer creation")
     @GetMapping("/create/individual-customer")
-    public ResponseEntity<IndividualCustomerViewDTO> createCustomer (@RequestBody @Valid CreateIndividualCustomerDTO createCustomerDTO) throws Exception {
-        IndividualCustomerViewDTO customerViewDTO = customerService.createCustomer(createCustomerDTO);
-        return ResponseEntity.ok(customerViewDTO);
+    public ResponseEntity<IndividualCustomerViewDTO> createIndividualCustomer (@RequestBody @Valid CreateIndividualCustomerDTO createIndividualCustomerDTO) throws Exception {
+        IndividualCustomerViewDTO individualCustomerViewDTO = customerService.createIndividualCustomer(createIndividualCustomerDTO);
+        return ResponseEntity.ok(individualCustomerViewDTO);
     }
-
-
-
-
 }

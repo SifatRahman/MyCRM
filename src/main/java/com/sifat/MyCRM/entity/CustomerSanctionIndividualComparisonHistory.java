@@ -21,8 +21,8 @@ public class CustomerSanctionIndividualComparisonHistory {
     private String individualId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id",referencedColumnName = "id", nullable = false)
-    private Customer customer;
+    @JoinColumn(name = "individual_customer_id",nullable = false)
+    private IndividualCustomer individualCustomer;
 
     @Column(name = "name_score")
     private BigDecimal nameScore;

@@ -9,6 +9,7 @@ import java.util.Optional;
 @Repository
 public interface IndividualCustomerRepository extends JpaRepository<IndividualCustomer,String> {
 
-    Optional<IndividualCustomer> findByNid_no(String s);
-    Optional<IndividualCustomer> findByPassport_no(String s);
+
+    Optional<IndividualCustomer> findByNidNo(String s);
+    Optional<IndividualCustomer> findByPassportNo(String s);
 }
