@@ -19,12 +19,12 @@ public class SanctionAddress {
     private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "individual_id")
+    @JoinColumn(name = "individual_id",referencedColumnName = "id")
     @JsonBackReference
     private SanctionIndividual individual;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "entity_id")
+    @JoinColumn(name = "entity_id",referencedColumnName = "id")
     @JsonBackReference
     private SanctionEntity entity;
 

@@ -3,6 +3,7 @@ package com.sifat.MyCRM.contorller;
 import com.sifat.MyCRM.dto.external.USSanctionListDBOutDTO;
 import com.sifat.MyCRM.dto.external.USSanctionListDataOutDTO;
 import com.sifat.MyCRM.dto.input.IndividualCustomerCompareInDTO;
+import com.sifat.MyCRM.dto.output.CustomerViewDTO;
 import com.sifat.MyCRM.dto.output.IndividualCustomerCompareResultOutDTO;
 import com.sifat.MyCRM.service.CustomerService;
 import com.sifat.MyCRM.service.SanctionComparisonService;
@@ -47,24 +48,24 @@ public class CustomerController {
         return ResponseEntity.ok(result);
     }
 
-    @Tag(name = "CRM004 : view data from DB")
-    @GetMapping("/view/db/sanction-data")
-    public String viewSavedSanctionDataFromDB (){
-        return customerService.viewSavedSanctionDataFromDB();
+    @Tag(name = "CRM004 : view single customer data")
+    @GetMapping("/view/{customer_id}/customer")
+    public CustomerViewDTO getCustomer (@PathVariable("customer_id") String customerId){
+        return customerService.getCustomer(customerId);
     }
 
-    @Tag(name = "CRM005 : search sanction data")
-    @GetMapping("/search/sanction-data")
-    public String searchSanctionData (){
-        return customerService.searchSanctionData();
-    }
-
-    @Tag(name = "CRM006 : compare individual customer data")
+    @Tag(name = "CRM005 : compare individual customer data")
     @PostMapping("/compare/individual/sanction-data")
     public ResponseEntity<List<IndividualCustomerCompareResultOutDTO>> compareIndividualData (@RequestBody @Valid IndividualCustomerCompareInDTO inDTO) throws Exception {
         List<IndividualCustomerCompareResultOutDTO> outDTO =  sanctionComparisonService.compareIndividualData(inDTO);
         return ResponseEntity.ok(outDTO);
     }
+
+//    @Tag(name = "CRM006 : search sanction data")
+//    @GetMapping("/search/sanction-data")
+//    public String searchSanctionData (){
+//        return customerService.searchSanctionData();
+//    }
 
 
 

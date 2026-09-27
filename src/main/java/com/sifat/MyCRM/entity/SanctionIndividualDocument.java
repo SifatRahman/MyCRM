@@ -19,7 +19,7 @@ public class SanctionIndividualDocument {
     private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "individual_id",nullable = false)
+    @JoinColumn(name = "individual_id",referencedColumnName = "id", nullable = false)
     @JsonBackReference
     private SanctionIndividual individual;
 

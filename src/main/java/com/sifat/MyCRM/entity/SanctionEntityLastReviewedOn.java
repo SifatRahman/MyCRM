@@ -21,7 +21,7 @@ public class SanctionEntityLastReviewedOn {
     private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "entity_id", nullable = false)
+    @JoinColumn(name = "entity_id",referencedColumnName = "id", nullable = false)
     @JsonBackReference
     private SanctionEntity entity;
 

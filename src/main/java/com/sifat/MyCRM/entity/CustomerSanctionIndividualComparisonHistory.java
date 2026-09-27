@@ -1,11 +1,9 @@
 package com.sifat.MyCRM.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "sanction_individual_comparison_history")
@@ -14,7 +12,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class SanctionIndividualComparisonHistory {
+public class CustomerSanctionIndividualComparisonHistory {
     @Id
     @Column(name = "id", nullable = false, length = 128)
     private String id;
@@ -22,22 +20,35 @@ public class SanctionIndividualComparisonHistory {
     @Column(name = "individual_id", unique = true, nullable = false)
     private String individualId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id",referencedColumnName = "id", nullable = false)
+    private Customer customer;
+
     @Column(name = "name_score")
     private BigDecimal nameScore;
 
     @Column(name = "date_of_birth_score")
     private BigDecimal dateOfBirthScore;
 
-    @Column(name = "place_of_birth_score")
-    private BigDecimal placeOfBirthScore;
+    @Column(name = "document_score")
+    private BigDecimal documentScore;
+
+    @Column(name = "nationality_score")
+    private BigDecimal nationalityScore;
 
     @Column(name = "address_score")
     private BigDecimal addressScore;
+
+    @Column(name = "place_of_birth_score")
+    private BigDecimal placeOfBirthScore;
 
     @Column(name = "total_score")
     private BigDecimal totalScore;
 
     @Column(name = "match_status")
     private String matchStatus;
+
+    @Column(name = "timestamp")
+    private LocalDateTime timestamp;
 
 }
