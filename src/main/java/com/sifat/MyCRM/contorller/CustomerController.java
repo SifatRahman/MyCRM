@@ -2,9 +2,12 @@ package com.sifat.MyCRM.contorller;
 
 import com.sifat.MyCRM.dto.external.USSanctionListDBOutDTO;
 import com.sifat.MyCRM.dto.external.USSanctionListDataOutDTO;
+import com.sifat.MyCRM.dto.input.CreateCustomerDTO;
+import com.sifat.MyCRM.dto.input.CreateIndividualCustomerDTO;
 import com.sifat.MyCRM.dto.input.IndividualCustomerCompareInDTO;
 import com.sifat.MyCRM.dto.output.CustomerViewDTO;
 import com.sifat.MyCRM.dto.output.IndividualCustomerCompareResultOutDTO;
+import com.sifat.MyCRM.dto.output.IndividualCustomerViewDTO;
 import com.sifat.MyCRM.service.CustomerService;
 import com.sifat.MyCRM.service.SanctionComparisonService;
 import com.sifat.MyCRM.service.SanctionService;
@@ -49,8 +52,8 @@ public class CustomerController {
     }
 
     @Tag(name = "CRM004 : view single customer data")
-    @GetMapping("/view/{customer_id}/customer")
-    public CustomerViewDTO getCustomer (@PathVariable("customer_id") String customerId){
+    @GetMapping("/view/{customer_id}/individual_customer")
+    public IndividualCustomerViewDTO getCustomer (@PathVariable("customer_id") String customerId){
         return customerService.getCustomer(customerId);
     }
 
@@ -61,11 +64,12 @@ public class CustomerController {
         return ResponseEntity.ok(outDTO);
     }
 
-//    @Tag(name = "CRM006 : search sanction data")
-//    @GetMapping("/search/sanction-data")
-//    public String searchSanctionData (){
-//        return customerService.searchSanctionData();
-//    }
+    @Tag(name = "CRM004 : individual customer creation")
+    @GetMapping("/create/individual-customer")
+    public ResponseEntity<IndividualCustomerViewDTO> createCustomer (@RequestBody @Valid CreateIndividualCustomerDTO createCustomerDTO) throws Exception {
+        IndividualCustomerViewDTO customerViewDTO = customerService.createCustomer(createCustomerDTO);
+        return ResponseEntity.ok(customerViewDTO);
+    }
 
 
 

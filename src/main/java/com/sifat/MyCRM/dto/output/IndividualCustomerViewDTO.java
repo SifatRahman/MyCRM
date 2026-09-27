@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CustomerViewDTO {
+public class IndividualCustomerViewDTO {
 
     private String id;
     private String sanction_individual_comparison_status;
@@ -20,9 +20,7 @@ public class CustomerViewDTO {
     private String full_name_2;
     private String family_name;
     private String short_name;
-
     private String mnemonic;
-
     private String gender;
 
     private Integer account_officer;
@@ -51,4 +49,5 @@ public class CustomerViewDTO {
     private LocalDate return_submission_date;
 
     private Boolean sms_alert_service;
+    private IndividualCustomerPermanentAddressViewDTO customer_permanent_address;
 }

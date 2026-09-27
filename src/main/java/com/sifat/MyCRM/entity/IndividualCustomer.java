@@ -7,13 +7,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "customers")
+@Table(name = "individual_customer")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Customer {
+public class IndividualCustomer {
 
     @Id
     @Column(name = "id", nullable = false, length = 128)
@@ -67,10 +67,10 @@ public class Customer {
     @Column(name = "nationality",nullable = false)
     private String nationality;
 
-    @Column(name = "nid_no",nullable = false)
+    @Column(name = "nid_no")
     private String nid_no; //nid_number
 
-    @Column(name = "passport_no",nullable = false)
+    @Column(name = "passport_no")
     private String passport_no; //passport_no
 
     @Column(name = "father_name",nullable = false)
@@ -93,6 +93,9 @@ public class Customer {
 
     @Column(name = "sms_alert_service")
     private Boolean sms_alert_service;
+
+    @Column(name = "is_sanction_aml_verified")
+    private Boolean isSanctionAMLVerified;
 
     @Column(name = "timestamp")
     private LocalDateTime timestamp;
