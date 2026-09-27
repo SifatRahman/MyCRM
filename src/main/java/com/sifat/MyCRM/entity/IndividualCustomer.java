@@ -19,20 +19,20 @@ public class IndividualCustomer {
     @Column(name = "id", nullable = false, length = 128)
     private String id;
 
-    @OneToMany(mappedBy = "customer",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "individualCustomer",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CustomerSanctionIndividualComparisonHistory> sanctionIndividualComparisonHistory;
 
     @Column(name = "full_name", nullable = false)
-    private String full_name;
+    private String fullName;
 
     @Column(name = "full_name2")
-    private String full_name_2;
+    private String fullName2;
 
     @Column(name = "family_name")
-    private String family_name;
+    private String familyName;
 
     @Column(name = "short_name")
-    private String short_name;
+    private String shortName;
 
     @Column(name = "mnemonic")
     private String mnemonic;
@@ -41,7 +41,7 @@ public class IndividualCustomer {
     private String gender; //male, female, third gender
 
     @Column(name = "account_officer")
-    private Integer account_officer;
+    private Integer accountOfficer;
 
     @Column(name = "sector")
     private Integer sector;
@@ -50,7 +50,7 @@ public class IndividualCustomer {
     private Integer target;
 
     @Column(name = "customer_status")
-    private Integer customer_status;// 1->Individual, 2-> Corporate
+    private Integer customerStatus;// 1->Individual, 2-> Corporate
 
     @Column(name = "industry")
     private String industry;
@@ -62,37 +62,37 @@ public class IndividualCustomer {
     private String residence; //All BD
 
     @Column(name = "date_of_birth",nullable = false)
-    private LocalDate date_of_birth;
+    private LocalDate dateOfBirth;
 
     @Column(name = "nationality",nullable = false)
     private String nationality;
 
     @Column(name = "nid_no")
-    private String nid_no; //nid_number
+    private String nidNo; //nid_number
 
     @Column(name = "passport_no")
-    private String passport_no; //passport_no
+    private String passportNo; //passport_no
 
     @Column(name = "father_name",nullable = false)
-    private String father_name;
+    private String fatherName;
 
     @Column(name = "mother_name",nullable = false)
-    private String mother_name;
+    private String motherName;
 
     @Column(name = "marital_status",nullable = false)
-    private String marital_status;
+    private String maritalStatus;
 
     @Column(name = "spouse")
     private String spouse;
 
     @Column(name = "cb_sector_code")
-    private String cb_sector_code;
+    private String cbSectorCode;
 
     @Column(name = "return_submission_date")
-    private LocalDate return_submission_date;
+    private LocalDate returnSubmissionDate;
 
     @Column(name = "sms_alert_service")
-    private Boolean sms_alert_service;
+    private Boolean smsAlertService;
 
     @Column(name = "is_sanction_aml_verified")
     private Boolean isSanctionAMLVerified;
