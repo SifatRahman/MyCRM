@@ -51,7 +51,7 @@ public class CustomerController {
     }
 
     @Tag(name = "CRM004 : view single customer data")    //done
-    @GetMapping("/view/{individual_customer_id}/individual_customer")
+    @GetMapping("/view/{individual_customer_id}/individual-customer")
     public IndividualCustomerViewDTO getIndividualCustomer (@PathVariable("individual_customer_id") String individualCustomerId){
         return customerService.getIndividualCustomer(individualCustomerId);
     }
@@ -67,11 +67,11 @@ public class CustomerController {
     @GetMapping("/create/individual-customer")
     public ResponseEntity<ResponseModelDTO> createIndividualCustomer (@RequestBody @Valid CreateIndividualCustomerDTO createIndividualCustomerDTO) throws Exception {
         try {
-        customerService.createIndividualCustomer(createIndividualCustomerDTO);
+        String savedCustomerId = customerService.createIndividualCustomer(createIndividualCustomerDTO);
         ResponseModelDTO responseModelDTO = ResponseModelDTO.builder().build();
             responseModelDTO.setStatus(ResponseDataStatus.success.name());
             responseModelDTO.setMessage("Customer created successfully");
-            responseModelDTO.setData(null);
+            responseModelDTO.setData(savedCustomerId);
             return ResponseEntity.ok(responseModelDTO);
         } catch (Exception e) {
             throw  new Exception(e.getMessage());
@@ -89,7 +89,7 @@ public class CustomerController {
             responseModelDTO.setData(res);
             return ResponseEntity.ok(responseModelDTO);
         } catch (Exception e) {
-            throw  new Exception(e.getMessage());
+            throw new Exception(e.getMessage());
         }
     }
 }

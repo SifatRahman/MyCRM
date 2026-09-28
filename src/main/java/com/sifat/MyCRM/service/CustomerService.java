@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -24,16 +25,16 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class CustomerService extends BaseService{
+public class CustomerService extends BaseService {
     private final IndividualCustomerRepository individualCustomerRepository;
     private final IndividualCustomerPermanentAddressRepository individualCustomerPermanentAddressRepository;
     private final CustomerSanctionIndividualComparisonHistoryRepository individualComparisonHistoryRepository;
     private final SanctionComparisonService sanctionComparisonService;
 
-    @Value("string.concatenation.regex")
+    @Value("${string.concatenation.regex}")
     protected String stringConcatenationRegex;
 
-    public String Hello(){
+    public String Hello() {
         var msg = showBaseName();
         return msg;
     }
@@ -44,13 +45,13 @@ public class CustomerService extends BaseService{
         ));
 
         CustomerSanctionIndividualComparisonHistory comparisonHistory = null;
-        if(!individualCustomer.getSanctionIndividualComparisonHistory().isEmpty()){
+        if (!individualCustomer.getSanctionIndividualComparisonHistory().isEmpty()) {
             comparisonHistory = individualCustomer.getSanctionIndividualComparisonHistory()
-                            .stream()
-                            .max(Comparator.comparing(
-                                    CustomerSanctionIndividualComparisonHistory::getTimestamp
-                            ))
-                            .orElse(null);
+                    .stream()
+                    .max(Comparator.comparing(
+                            CustomerSanctionIndividualComparisonHistory::getTimestamp
+                    ))
+                    .orElse(null);
         }
         IndividualCustomerPermanentAddress permanentAddress = individualCustomerPermanentAddressRepository.findByIndividualCustomer_Id(individualCustomer.getId())
                 .orElseThrow(() -> new RuntimeException("Individual customer permanent address not found!"));
@@ -74,7 +75,7 @@ public class CustomerService extends BaseService{
         return IndividualCustomerViewDTO.builder()
                 .id(individualCustomer.getId())
 
-                .sanction_individual_comparison_status(comparisonHistory!=null?comparisonHistory.getMatchStatus():null)
+                .sanction_individual_comparison_status(comparisonHistory != null ? comparisonHistory.getMatchStatus() : null)
 
                 .full_name(individualCustomer.getFullName())
                 .full_name_2(individualCustomer.getFullName2())
@@ -119,14 +120,14 @@ public class CustomerService extends BaseService{
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void createIndividualCustomer(CreateIndividualCustomerDTO inDTO) throws Exception {
+    public String createIndividualCustomer(CreateIndividualCustomerDTO inDTO) throws Exception {
         try {
-            if(inDTO.getNid_no().isBlank() && inDTO.getPassport_no().isBlank()){
+            if (inDTO.getNid_no().isBlank() && inDTO.getPassport_no().isBlank()) {
                 throw new Exception("Either Nid or passport number must be provided!");
             }
             var existsByNID = individualCustomerRepository.findById(inDTO.getNid_no()).orElse(null);
             var existsByPass = individualCustomerRepository.findById(inDTO.getPassport_no()).orElse(null);
-            if(existsByNID!=null && existsByPass!=null){
+            if (existsByNID != null && existsByPass != null) {
                 throw new Exception("Customer with this NID Number or Passport already exists!");
             }
 
@@ -146,7 +147,7 @@ public class CustomerService extends BaseService{
             customer.setLanguage(inDTO.getLanguage());
             customer.setResidence(inDTO.getResidence());
 
-            if(inDTO.getDate_of_birth().isAfter(LocalDate.now())){
+            if (inDTO.getDate_of_birth().isAfter(LocalDate.now())) {
                 throw new Exception("Birth date can't be future!");
             }
             customer.setDateOfBirth(inDTO.getDate_of_birth());
@@ -182,12 +183,9 @@ public class CustomerService extends BaseService{
             cpa.setPhone_number_off_1(inCPA.getPhone_number_off_1());
             cpa.setEmail_address(inCPA.getEmail_address());
 
-            //sanction verification
-            verifyAMLSanctionInfoAndSaveHistory(customer,cpa);
-
-
             IndividualCustomer savedIndividualCustomer = individualCustomerRepository.save(customer);
             IndividualCustomerPermanentAddress customerPermanentAddress = individualCustomerPermanentAddressRepository.save(cpa);
+            return savedIndividualCustomer.getId();
 
 
         } catch (Exception e) {
@@ -195,44 +193,44 @@ public class CustomerService extends BaseService{
         }
     }
 
-    private void verifyAMLSanctionInfoAndSaveHistory(IndividualCustomer ic, IndividualCustomerPermanentAddress cpa) {
+    public List<IndividualCustomerCompareResultOutDTO> verifySavedIndividualCustomerAML(String individualCustomerId) {
+        try {
+            IndividualCustomer individualCustomer = individualCustomerRepository.findById(individualCustomerId).orElseThrow(() ->
+                    new RuntimeException("Customer not found!"));
+            IndividualCustomerPermanentAddress customerPermanentAddress = individualCustomerPermanentAddressRepository.findByIndividualCustomer_Id(individualCustomerId).orElseThrow(() ->
+                    new RuntimeException("Customer permanent address not found!"));
+
+            IndividualCustomerCompareInDTO individualCustomerCompareInDTO = getIndividualCustomerCompareInDTO(individualCustomer, customerPermanentAddress);
+            List<IndividualCustomerCompareResultOutDTO> matchingResult = sanctionComparisonService.compareIndividualData(individualCustomerCompareInDTO);
+            IndividualCustomerCompareResultOutDTO topMatchingResult = matchingResult.getFirst();
+
+            //update the table
+            individualCustomer.setIsSanctionAMLVerified(true);
+            individualCustomerRepository.save(individualCustomer);
+            //insert data into history table
+
+            //history keeping of top score
+            CustomerSanctionIndividualComparisonHistory his = new CustomerSanctionIndividualComparisonHistory();
+            his.setId(getUUID());
+            his.setIndividualCustomer(individualCustomer);
+            his.setNameScore(topMatchingResult.getName_score());
+            his.setDateOfBirthScore(topMatchingResult.getDob_score());
+            his.setDocumentScore(topMatchingResult.getDoc_score());
+            his.setNationalityScore(topMatchingResult.getNationality_score());
+            his.setAddressScore(topMatchingResult.getAddress_score());
+            his.setPlaceOfBirthScore(topMatchingResult.getPob_score());
+            his.setTotalScore(topMatchingResult.getOverall_score());
+            his.setMatchStatus(topMatchingResult.getSanction_match_status());
+            his.setTimestamp(LocalDateTime.now());
+            individualComparisonHistoryRepository.save(his);
+            return matchingResult;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
-    public List<IndividualCustomerCompareResultOutDTO> verifySavedIndividualCustomerAML(String individualCustomerId) throws Exception {
-        IndividualCustomer individualCustomer = individualCustomerRepository.findById(individualCustomerId).orElseThrow(()->
-                new RuntimeException("Customer not found!"));
-        IndividualCustomerPermanentAddress customerPermanentAddress = individualCustomerPermanentAddressRepository.findByIndividualCustomer_Id(individualCustomerId).orElseThrow(()->
-                new RuntimeException("Customer permanent address not found!"));
 
-        IndividualCustomerCompareInDTO individualCustomerCompareInDTO = getIndividualCustomerCompareInDTO(individualCustomer,customerPermanentAddress);
-        List<IndividualCustomerCompareResultOutDTO> matchingResult = sanctionComparisonService.compareIndividualData(individualCustomerCompareInDTO);
-        IndividualCustomerCompareResultOutDTO topMatchingResult = matchingResult.getFirst();
-
-        //update the table
-        individualCustomer.setIsSanctionAMLVerified(true);
-        individualCustomerRepository.save(individualCustomer);
-        //insert data into history table
-
-        //history keeping of top score
-        CustomerSanctionIndividualComparisonHistory his = new CustomerSanctionIndividualComparisonHistory();
-        his.setId(getUUID());
-        his.setIndividualCustomer(individualCustomer);
-        his.setNameScore(topMatchingResult.getName_score());
-        his.setDateOfBirthScore(topMatchingResult.getDob_score());
-        his.setDocumentScore(topMatchingResult.getDoc_score());
-        his.setNationalityScore(topMatchingResult.getNationality_score());
-        his.setAddressScore(topMatchingResult.getAddress_score());
-        his.setPlaceOfBirthScore(topMatchingResult.getPob_score());
-        his.setTotalScore(topMatchingResult.getOverall_score());
-        his.setMatchStatus(topMatchingResult.getSanction_match_status());
-        his.setTimestamp(LocalDateTime.now());
-        individualComparisonHistoryRepository.save(his);
-        return matchingResult;
-    }
-
-
-
-    public IndividualCustomerCompareInDTO getIndividualCustomerCompareInDTO(IndividualCustomer ic,IndividualCustomerPermanentAddress pa){
+    public IndividualCustomerCompareInDTO getIndividualCustomerCompareInDTO(IndividualCustomer ic, IndividualCustomerPermanentAddress pa) {
         IndividualCustomerCompareInDTO individualCustomerCompareInDTO = new IndividualCustomerCompareInDTO();
 
         CustomerBasicDetailDTO basicDetailDTO = CustomerBasicDetailDTO.builder()
@@ -274,7 +272,6 @@ public class CustomerService extends BaseService{
                 .filter(s -> !s.isEmpty())
                 .collect(Collectors.toList());
     }
-
 
 
 }
