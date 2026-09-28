@@ -11,6 +11,7 @@ import com.sifat.MyCRM.repository.SanctionIndividualRepository;
 import com.sifat.MyCRM.utility.SanctionMatchStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -29,19 +30,9 @@ public class SanctionComparisonService extends BaseService {
 
     public List<IndividualCustomerCompareResultOutDTO> compareIndividualData(IndividualCustomerCompareInDTO inDTO) throws Exception {
         try {
-            CustomerBasicDetailDTO basicDetails = inDTO.getBasic_details();
-            CustomerAMLIndividualPermanentAddressInDTO permanentAddress = inDTO.getPermanent_address();
+            CustomerBasicDetailDTO customerDetailDTO = inDTO.getBasic_details();
+            CustomerAMLIndividualPermanentAddressInDTO customerAddressDTO = inDTO.getPermanent_address();
 
-            List<IndividualCustomerCompareResultOutDTO> matchingResult = getCustomerSanctionMatchingResult(basicDetails, permanentAddress);
-            return matchingResult.stream().limit(5).toList();
-        } catch (Exception e) {
-            throw new Exception(e.getMessage());
-        }
-    }
-
-
-    public List<IndividualCustomerCompareResultOutDTO> getCustomerSanctionMatchingResult(CustomerBasicDetailDTO customerDetailDTO, CustomerAMLIndividualPermanentAddressInDTO customerAddressDTO) throws Exception {
-        try {
             List<SanctionIndividual> sanctionedIndividuals = sanctionIndividualRepository.findAll();
 
             List<IndividualCustomerCompareResultOutDTO> results = new ArrayList<>();
@@ -51,7 +42,7 @@ public class SanctionComparisonService extends BaseService {
                 double nameScore = fuzzyMatcher.getJaroWinklerSimilarity(customerDetailDTO.getFull_name(), getIndividualFullName(sanctionIndividual));
                 double dobScore = fuzzyMatcher.getIndividualDateSimilarity(customerDetailDTO.getDate_of_birth(), sanctionIndividual.getIndividualDateOfBirth());
                 double nationalityScore = fuzzyMatcher.getIndividualNationalitySimilarity(customerDetailDTO.getNationality(), sanctionIndividual.getNationalities());
-                double docScore = fuzzyMatcher.getIndividualDocumentSimilarity(customerDetailDTO.getNid_no(),customerDetailDTO.getPassport_no(), sanctionIndividual.getIndividual_document());
+                double docScore = fuzzyMatcher.getIndividualDocumentSimilarity(customerDetailDTO.getNid_no(), customerDetailDTO.getPassport_no(), sanctionIndividual.getIndividual_document());
 
                 double addressScore = fuzzyMatcher.getAddressSimilarity(customerAddressDTO, sanctionIndividual.getIndividualAddress());
                 double pobScore = fuzzyMatcher.getPlaceOfBirthSimilarity(customerAddressDTO, sanctionIndividual.getIndividual_place_of_birth());
@@ -78,19 +69,20 @@ public class SanctionComparisonService extends BaseService {
                                 BigDecimal.valueOf(pobScore).setScale(2, RoundingMode.HALF_UP),
                                 BigDecimal.valueOf(nationalityScore).setScale(2, RoundingMode.HALF_UP),
                                 BigDecimal.valueOf(overallScore).setScale(2, RoundingMode.HALF_UP),
-                                overallScoreString+"%",
+                                overallScoreString + "%",
                                 determineStatus(overallScore)
                         )
                 );
             }
 
-            return results.stream()
+            List<IndividualCustomerCompareResultOutDTO> reversedList = results.stream()
                     .sorted(
                             Comparator.comparing(
                                     IndividualCustomerCompareResultOutDTO::getOverall_score
                             ).reversed()
                     )
                     .toList();
+            return reversedList.stream().limit(5).toList();
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
