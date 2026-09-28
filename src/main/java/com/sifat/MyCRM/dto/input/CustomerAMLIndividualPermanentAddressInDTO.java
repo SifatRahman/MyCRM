@@ -1,15 +1,14 @@
 package com.sifat.MyCRM.dto.input;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
 import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class CustomerAMLIndividualPermanentAddressInDTO {
     private String country;
     private String division_or_state;

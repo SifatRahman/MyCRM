@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,7 +20,7 @@ public class CreateIndividualCustomerPermanentAddressDTO {
     private String post_code;
     private String village_or_area;
     private String road_or_block;
-    private String house_or_flat_no;
+    private List<String> house_or_flat_no;
     private String mobile_no;
     private String phone_number_off_1;
     private String email_address;

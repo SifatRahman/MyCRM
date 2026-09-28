@@ -1,9 +1,6 @@
 package com.sifat.MyCRM.dto.input;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 
@@ -11,6 +8,7 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class CustomerBasicDetailDTO {
 
     //Full name
@@ -43,7 +41,7 @@ public class CustomerBasicDetailDTO {
 
 
     private String cb_sector_code;
-    private String return_submission_date;
+    private LocalDate return_submission_date;
     private Boolean sms_alert_service;
 
 }

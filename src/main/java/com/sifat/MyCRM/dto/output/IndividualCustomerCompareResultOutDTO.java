@@ -23,5 +23,4 @@ public class IndividualCustomerCompareResultOutDTO {
     private BigDecimal overall_score;
     private String individual_compare_percentage;
     private String sanction_match_status;
-    //private USSanctionIndividualDataDTO top_match_with;
 }

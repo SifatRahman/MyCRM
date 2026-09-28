@@ -17,9 +17,6 @@ public class CustomerSanctionIndividualComparisonHistory {
     @Column(name = "id", nullable = false, length = 128)
     private String id;
 
-    @Column(name = "individual_id", unique = true, nullable = false)
-    private String individualId;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "individual_customer_id",nullable = false)
     private IndividualCustomer individualCustomer;

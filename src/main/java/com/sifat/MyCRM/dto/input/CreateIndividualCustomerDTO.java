@@ -1,6 +1,7 @@
 package com.sifat.MyCRM.dto.input;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,13 +27,13 @@ public class CreateIndividualCustomerDTO {
     private Integer account_officer;
     private Integer sector;
     private Integer target;
-    @NotBlank
+    @NotNull
     private Integer customer_status;
 
     private String industry;
     private Integer language;
     private String residence;
-    @NotBlank
+    @NotNull
     private LocalDate date_of_birth;
     @NotBlank
     private String nationality;

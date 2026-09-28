@@ -33,9 +33,7 @@ public class SanctionComparisonService extends BaseService {
             CustomerAMLIndividualPermanentAddressInDTO permanentAddress = inDTO.getPermanent_address();
 
             List<IndividualCustomerCompareResultOutDTO> matchingResult = getCustomerSanctionMatchingResult(basicDetails, permanentAddress);
-            return matchingResult;
-
-
+            return matchingResult.stream().limit(5).toList();
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
@@ -99,15 +97,6 @@ public class SanctionComparisonService extends BaseService {
     }
 
     private String determineStatus(double overallScore) {
-
-//        if (overallScore >= 0.90 && nameScore >= 0.85) {
-//            return SanctionMatchStatus.HIGH_POTENTIAL_MATCHED.name();
-//        }
-//
-//        if (overallScore >= 0.75 && nameScore >= 0.70) {
-//            return SanctionMatchStatus.POTENTIAL_MATCHED.name();
-//        }
-
         if (overallScore >= 0.85) {
             return SanctionMatchStatus.HIGH_POTENTIAL_MATCHED.name();
         }

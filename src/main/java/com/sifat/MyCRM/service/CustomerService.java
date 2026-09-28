@@ -1,27 +1,37 @@
 package com.sifat.MyCRM.service;
 
 import com.sifat.MyCRM.dto.input.*;
+import com.sifat.MyCRM.dto.output.IndividualCustomerCompareResultOutDTO;
 import com.sifat.MyCRM.dto.output.IndividualCustomerPermanentAddressViewDTO;
 import com.sifat.MyCRM.dto.output.IndividualCustomerViewDTO;
 import com.sifat.MyCRM.entity.CustomerSanctionIndividualComparisonHistory;
 import com.sifat.MyCRM.entity.IndividualCustomer;
 import com.sifat.MyCRM.entity.IndividualCustomerPermanentAddress;
+import com.sifat.MyCRM.repository.CustomerSanctionIndividualComparisonHistoryRepository;
 import com.sifat.MyCRM.repository.IndividualCustomerPermanentAddressRepository;
 import com.sifat.MyCRM.repository.IndividualCustomerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class CustomerService extends BaseService{
     private final IndividualCustomerRepository individualCustomerRepository;
     private final IndividualCustomerPermanentAddressRepository individualCustomerPermanentAddressRepository;
+    private final CustomerSanctionIndividualComparisonHistoryRepository individualComparisonHistoryRepository;
+    private final SanctionComparisonService sanctionComparisonService;
 
+    @Value("string.concatenation.regex")
+    protected String stringConcatenationRegex;
 
     public String Hello(){
         var msg = showBaseName();
@@ -42,7 +52,7 @@ public class CustomerService extends BaseService{
                             ))
                             .orElse(null);
         }
-        IndividualCustomerPermanentAddress permanentAddress = individualCustomerPermanentAddressRepository.findById(individualCustomer.getId())
+        IndividualCustomerPermanentAddress permanentAddress = individualCustomerPermanentAddressRepository.findByIndividualCustomer_Id(individualCustomer.getId())
                 .orElseThrow(() -> new RuntimeException("Individual customer permanent address not found!"));
 
         IndividualCustomerPermanentAddressViewDTO individualCustomerPermanentAddress = IndividualCustomerPermanentAddressViewDTO.builder()
@@ -109,7 +119,7 @@ public class CustomerService extends BaseService{
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public IndividualCustomerViewDTO createIndividualCustomer(CreateIndividualCustomerDTO inDTO) throws Exception {
+    public void createIndividualCustomer(CreateIndividualCustomerDTO inDTO) throws Exception {
         try {
             if(inDTO.getNid_no().isBlank() && inDTO.getPassport_no().isBlank()){
                 throw new Exception("Either Nid or passport number must be provided!");
@@ -167,7 +177,7 @@ public class CustomerService extends BaseService{
             cpa.setPost_code(inCPA.getPost_code());
             cpa.setVillage_or_area(inCPA.getVillage_or_area());
             cpa.setRoad_or_block(inCPA.getRoad_or_block());
-            cpa.setHouse_or_flat_no(inCPA.getHouse_or_flat_no());
+            cpa.setHouse_or_flat_no(houseOrFlatsToString(inCPA.getHouse_or_flat_no()));
             cpa.setMobile_no(inCPA.getMobile_no());
             cpa.setPhone_number_off_1(inCPA.getPhone_number_off_1());
             cpa.setEmail_address(inCPA.getEmail_address());
@@ -183,9 +193,88 @@ public class CustomerService extends BaseService{
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
-        return null;
     }
 
     private void verifyAMLSanctionInfoAndSaveHistory(IndividualCustomer ic, IndividualCustomerPermanentAddress cpa) {
     }
+
+    public List<IndividualCustomerCompareResultOutDTO> verifySavedIndividualCustomerAML(String individualCustomerId) throws Exception {
+        IndividualCustomer individualCustomer = individualCustomerRepository.findById(individualCustomerId).orElseThrow(()->
+                new RuntimeException("Customer not found!"));
+        IndividualCustomerPermanentAddress customerPermanentAddress = individualCustomerPermanentAddressRepository.findByIndividualCustomer_Id(individualCustomerId).orElseThrow(()->
+                new RuntimeException("Customer permanent address not found!"));
+
+        IndividualCustomerCompareInDTO individualCustomerCompareInDTO = getIndividualCustomerCompareInDTO(individualCustomer,customerPermanentAddress);
+        List<IndividualCustomerCompareResultOutDTO> matchingResult = sanctionComparisonService.compareIndividualData(individualCustomerCompareInDTO);
+        IndividualCustomerCompareResultOutDTO topMatchingResult = matchingResult.getFirst();
+
+        //update the table
+        individualCustomer.setIsSanctionAMLVerified(true);
+        individualCustomerRepository.save(individualCustomer);
+        //insert data into history table
+
+        //history keeping of top score
+        CustomerSanctionIndividualComparisonHistory his = new CustomerSanctionIndividualComparisonHistory();
+        his.setId(getUUID());
+        his.setIndividualCustomer(individualCustomer);
+        his.setNameScore(topMatchingResult.getName_score());
+        his.setDateOfBirthScore(topMatchingResult.getDob_score());
+        his.setDocumentScore(topMatchingResult.getDoc_score());
+        his.setNationalityScore(topMatchingResult.getNationality_score());
+        his.setAddressScore(topMatchingResult.getAddress_score());
+        his.setPlaceOfBirthScore(topMatchingResult.getPob_score());
+        his.setTotalScore(topMatchingResult.getOverall_score());
+        his.setMatchStatus(topMatchingResult.getSanction_match_status());
+        his.setTimestamp(LocalDateTime.now());
+        individualComparisonHistoryRepository.save(his);
+        return matchingResult;
+    }
+
+
+
+    public IndividualCustomerCompareInDTO getIndividualCustomerCompareInDTO(IndividualCustomer ic,IndividualCustomerPermanentAddress pa){
+        IndividualCustomerCompareInDTO individualCustomerCompareInDTO = new IndividualCustomerCompareInDTO();
+
+        CustomerBasicDetailDTO basicDetailDTO = CustomerBasicDetailDTO.builder()
+                .full_name(ic.getFullName()).full_name_2(ic.getFullName2()).family_name(ic.getFamilyName())
+                .short_name(ic.getShortName()).mnemonic(ic.getMnemonic()).gender(ic.getGender())
+                .account_officer(ic.getAccountOfficer()).sector(ic.getSector()).target(ic.getTarget())
+                .customer_status(ic.getCustomerStatus()).industry(ic.getIndustry()).language(ic.getLanguage())
+                .residence(ic.getResidence()).date_of_birth(ic.getDateOfBirth()).nationality(ic.getNationality())
+                .nid_no(ic.getNidNo()).passport_no(ic.getPassportNo()).father_name(ic.getFatherName())
+                .mother_name(ic.getMotherName()).marital_status(ic.getMaritalStatus()).spouse(ic.getSpouse())
+                .cb_sector_code(ic.getCbSectorCode()).return_submission_date(ic.getReturnSubmissionDate()).sms_alert_service(ic.getSmsAlertService())
+                .build();
+
+        CustomerAMLIndividualPermanentAddressInDTO address = CustomerAMLIndividualPermanentAddressInDTO.builder()
+                .country(pa.getCountry()).division_or_state(pa.getDivision_or_state()).district(pa.getDistrict())
+                .upazila(pa.getUpazila()).police_station(pa.getPolice_station()).post_code(pa.getPost_code())
+                .village_or_area(pa.getVillage_or_area()).road_or_block(pa.getRoad_or_block()).house_or_flat_no(stringToHouseOrFlats(pa.getHouse_or_flat_no()))
+                .mobile_no(pa.getMobile_no()).phone_number_off_1(pa.getPhone_number_off_1()).email_address(pa.getEmail_address()).build();
+
+        individualCustomerCompareInDTO.setBasic_details(basicDetailDTO);
+        individualCustomerCompareInDTO.setPermanent_address(address);
+        return individualCustomerCompareInDTO;
+    }
+
+    public String houseOrFlatsToString(List<String> houseOrFlats) {
+        if (houseOrFlats == null || houseOrFlats.isEmpty()) {
+            return null;
+        }
+
+        return String.join(stringConcatenationRegex, houseOrFlats);
+    }
+
+    public List<String> stringToHouseOrFlats(String value) {
+        if (value == null || value.isBlank()) {
+            return new ArrayList<>();
+        }
+        return Arrays.stream(value.split(stringConcatenationRegex))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+    }
+
+
+
 }
