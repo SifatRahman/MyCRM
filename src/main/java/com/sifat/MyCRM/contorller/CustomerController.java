@@ -82,10 +82,10 @@ public class CustomerController {
     @GetMapping("/verify/aml/{individual_customer_id}/saved/individual-customer")
     public ResponseEntity<ResponseModelDTO> verifySavedIndividualCustomerAML (@PathVariable("individual_customer_id") String individualCustomerId) throws Exception {
         try {
-            var res = customerService.verifySavedIndividualCustomerAML(individualCustomerId);
+            List<IndividualCustomerCompareResultOutDTO> res = customerService.verifySavedIndividualCustomerAML(individualCustomerId);
             ResponseModelDTO responseModelDTO = ResponseModelDTO.builder().build();
             responseModelDTO.setStatus(ResponseDataStatus.success.name());
-            responseModelDTO.setMessage("Customer verified successfully");
+            responseModelDTO.setMessage(res.isEmpty()?"Customer not verification failed!":"Customer verification info found successfully");
             responseModelDTO.setData(res);
             return ResponseEntity.ok(responseModelDTO);
         } catch (Exception e) {

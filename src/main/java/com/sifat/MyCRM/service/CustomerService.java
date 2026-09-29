@@ -202,27 +202,30 @@ public class CustomerService extends BaseService {
 
             IndividualCustomerCompareInDTO individualCustomerCompareInDTO = getIndividualCustomerCompareInDTO(individualCustomer, customerPermanentAddress);
             List<IndividualCustomerCompareResultOutDTO> matchingResult = sanctionComparisonService.compareIndividualData(individualCustomerCompareInDTO);
-            IndividualCustomerCompareResultOutDTO topMatchingResult = matchingResult.getFirst();
 
-            //update the table
-            individualCustomer.setIsSanctionAMLVerified(true);
-            individualCustomerRepository.save(individualCustomer);
-            //insert data into history table
+            if(!matchingResult.isEmpty()) {
+                IndividualCustomerCompareResultOutDTO topMatchingResult = matchingResult.getFirst();
 
-            //history keeping of top score
-            CustomerSanctionIndividualComparisonHistory his = new CustomerSanctionIndividualComparisonHistory();
-            his.setId(getUUID());
-            his.setIndividualCustomer(individualCustomer);
-            his.setNameScore(topMatchingResult.getName_score());
-            his.setDateOfBirthScore(topMatchingResult.getDob_score());
-            his.setDocumentScore(topMatchingResult.getDoc_score());
-            his.setNationalityScore(topMatchingResult.getNationality_score());
-            his.setAddressScore(topMatchingResult.getAddress_score());
-            his.setPlaceOfBirthScore(topMatchingResult.getPob_score());
-            his.setTotalScore(topMatchingResult.getOverall_score());
-            his.setMatchStatus(topMatchingResult.getSanction_match_status());
-            his.setTimestamp(LocalDateTime.now());
-            individualComparisonHistoryRepository.save(his);
+                //update the table
+                individualCustomer.setIsSanctionAMLVerified(true);
+                individualCustomerRepository.save(individualCustomer);
+                //insert data into history table
+
+                //history keeping of top score
+                CustomerSanctionIndividualComparisonHistory his = new CustomerSanctionIndividualComparisonHistory();
+                his.setId(getUUID());
+                his.setIndividualCustomer(individualCustomer);
+                his.setNameScore(topMatchingResult.getName_score());
+                his.setDateOfBirthScore(topMatchingResult.getDob_score());
+                his.setDocumentScore(topMatchingResult.getDoc_score());
+                his.setNationalityScore(topMatchingResult.getNationality_score());
+                his.setAddressScore(topMatchingResult.getAddress_score());
+                his.setPlaceOfBirthScore(topMatchingResult.getPob_score());
+                his.setTotalScore(topMatchingResult.getOverall_score());
+                his.setMatchStatus(topMatchingResult.getSanction_match_status());
+                his.setTimestamp(LocalDateTime.now());
+                individualComparisonHistoryRepository.save(his);
+            }
             return matchingResult;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
