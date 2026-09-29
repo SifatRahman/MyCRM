@@ -85,7 +85,7 @@ public class CustomerController {
             List<IndividualCustomerCompareResultOutDTO> res = customerService.verifySavedIndividualCustomerAML(individualCustomerId);
             ResponseModelDTO responseModelDTO = ResponseModelDTO.builder().build();
             responseModelDTO.setStatus(ResponseDataStatus.success.name());
-            responseModelDTO.setMessage(res.isEmpty()?"Customer not verification failed!":"Customer verification info found successfully");
+            responseModelDTO.setMessage(res.isEmpty()?"Customer verification failed!":"Customer verification info found successfully");
             responseModelDTO.setData(res);
             return ResponseEntity.ok(responseModelDTO);
         } catch (Exception e) {
