@@ -7,6 +7,7 @@ import com.sifat.MyCRM.dto.input.CustomerBasicDetailDTO;
 import com.sifat.MyCRM.dto.input.IndividualCustomerCompareInDTO;
 import com.sifat.MyCRM.dto.output.IndividualCustomerCompareResultOutDTO;
 import com.sifat.MyCRM.entity.SanctionIndividual;
+import com.sifat.MyCRM.exception.ResourceNotFoundException;
 import com.sifat.MyCRM.repository.SanctionIndividualRepository;
 import com.sifat.MyCRM.utility.SanctionMatchStatus;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,9 @@ public class SanctionComparisonService extends BaseService {
             CustomerAMLIndividualPermanentAddressInDTO customerAddressDTO = inDTO.getPermanent_address();
 
             List<SanctionIndividual> sanctionedIndividuals = sanctionIndividualRepository.findAll();
+            if(sanctionedIndividuals.isEmpty()){
+                throw new ResourceNotFoundException("No sanctioned data found!");
+            }
 
             List<IndividualCustomerCompareResultOutDTO> results = new ArrayList<>();
 
