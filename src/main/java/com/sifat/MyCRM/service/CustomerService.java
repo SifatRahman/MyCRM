@@ -42,6 +42,9 @@ public class CustomerService extends BaseService {
     }
 
     public IndividualCustomerViewDTO getIndividualCustomer(String individualCustomerId) {
+        if(isBlankStringOrNull(individualCustomerId)){
+            throw new ResourceNotFoundException("Individual customer id can't be null or blank!");
+        }
         IndividualCustomer individualCustomer = individualCustomerRepository.findById(individualCustomerId).orElseThrow(() -> new ResourceNotFoundException(
                 "Individual customer not found with id: " + individualCustomerId
         ));
@@ -197,6 +200,9 @@ public class CustomerService extends BaseService {
 
     public List<IndividualCustomerCompareResultOutDTO> verifySavedIndividualCustomerAML(String individualCustomerId) {
         try {
+            if(isBlankStringOrNull(individualCustomerId)){
+                throw new ResourceNotFoundException("Individual customer id can't be null or blank!");
+            }
             IndividualCustomer individualCustomer = individualCustomerRepository.findById(individualCustomerId).orElseThrow(() ->
                     new ResourceNotFoundException("Customer not found!"));
             IndividualCustomerPermanentAddress customerPermanentAddress = individualCustomerPermanentAddressRepository.findByIndividualCustomer_Id(individualCustomerId).orElseThrow(() ->

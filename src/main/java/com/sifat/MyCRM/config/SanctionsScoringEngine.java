@@ -4,13 +4,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class SanctionsScoringEngine {
+    private final AMLSanctionConfigurationService configurationService;
 
-    private static final double NAME_WEIGHT        = 0.40;
-    private static final double DOB_WEIGHT         = 0.25;
-    private static final double DOC_WEIGHT         = 0.15; //nid, passport_no
-    private static final double NATIONALITY_WEIGHT = 0.10;
-    private static final double ADDRESS_WEIGHT     = 0.05;
-    private static final double POB_WEIGHT         = 0.05;
+    public SanctionsScoringEngine(AMLSanctionConfigurationService configurationService) {
+        this.configurationService = configurationService;
+    }
 
     public double calculate(
             double nameScore,
@@ -19,12 +17,13 @@ public class SanctionsScoringEngine {
             double nationalityScore,
             double addressScore,
             double pobScore) {
+        var config = configurationService.getConfiguration();
 
-        return nameScore * NAME_WEIGHT +
-                        dobScore * DOB_WEIGHT +
-                        docScore * DOC_WEIGHT +
-                        nationalityScore * NATIONALITY_WEIGHT +
-                        addressScore * ADDRESS_WEIGHT +
-                        pobScore * POB_WEIGHT;
+        return nameScore * config.getAfterScoreNameWeight() +
+                        dobScore * config.getAfterScoreDobWeight() +
+                        docScore * config.getAfterScoreDocWeight() +
+                        nationalityScore * config.getAfterScoreNationalityWeight() +
+                        addressScore * config.getAfterScoreAddressWeight() +
+                        pobScore * config.getAfterScorePobWeight();
     }
 }

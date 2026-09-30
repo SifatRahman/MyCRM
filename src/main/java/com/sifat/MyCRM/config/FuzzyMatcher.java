@@ -11,12 +11,14 @@ import java.util.List;
 
 @Component
 public class FuzzyMatcher {
+    private final AMLSanctionConfigurationService configurationService;
 
     private final JaroWinklerSimilarity jaroWinkler = new JaroWinklerSimilarity();
 
     private final TextNormalizer normalizer;
 
-    public FuzzyMatcher(TextNormalizer normalizer) {
+    public FuzzyMatcher(AMLSanctionConfigurationService configurationService, TextNormalizer normalizer) {
+        this.configurationService = configurationService;
         this.normalizer = normalizer;
     }
 
@@ -25,32 +27,6 @@ public class FuzzyMatcher {
 
         String a = normalizer.normalize(customerName);
         String b = normalizer.normalize(sanctionsName);
-
-        if (a.isEmpty() || b.isEmpty()) {
-            return 0.00;
-        }
-
-        return jaroWinkler.apply(a, b);
-    }
-
-    public double addressSimilarity(String customerAddress,
-                                    String sanctionsAddress) {
-
-        String a = normalizer.normalize(customerAddress);
-        String b = normalizer.normalize(sanctionsAddress);
-
-        if (a.isEmpty() || b.isEmpty()) {
-            return 0.00;
-        }
-
-        return jaroWinkler.apply(a, b);
-    }
-
-    public double placeOfBirthSimilarity(String customerPob,
-                                         String sanctionsPob) {
-
-        String a = normalizer.normalize(customerPob);
-        String b = normalizer.normalize(sanctionsPob);
 
         if (a.isEmpty() || b.isEmpty()) {
             return 0.00;
@@ -180,7 +156,7 @@ public class FuzzyMatcher {
                         if (!e.getDate().isBlank() && LocalDate.parse(e.getDate()).equals(customerDob)) {
                             currentSimilarity = 1.00;
                         } else if (!e.getYear().isBlank() && Integer.parseInt(e.getYear()) == customerDob.getYear()) {
-                            currentSimilarity = 0.70;
+                            currentSimilarity = configurationService.getConfiguration().getOnlyExactYearMatchDobScore();
                         }
                         break;
 
@@ -191,7 +167,7 @@ public class FuzzyMatcher {
 
                         if (fromYear <= customerDob.getYear()
                                 && customerDob.getYear() <= toYear) {
-                            currentSimilarity = 0.70;
+                            currentSimilarity = configurationService.getConfiguration().getYearInBetweenGivenTwoYearMatchDobScore();
                         }
                         break;
 
@@ -202,7 +178,7 @@ public class FuzzyMatcher {
                             approximateYear = Integer.parseInt(e.getYear());
                         }
                         if (approximateYear == customerDob.getYear()) {
-                            currentSimilarity = 0.20;
+                            currentSimilarity = configurationService.getConfiguration().getYearInBetweenGivenTwoYearMatchDobScore();
                         }
                         break;
 

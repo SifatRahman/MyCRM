@@ -4,6 +4,7 @@ import com.sifat.MyCRM.dto.external.USSanctionListDBOutDTO;
 import com.sifat.MyCRM.dto.external.USSanctionListDataOutDTO;
 import com.sifat.MyCRM.dto.helper.ResponseModelDTO;
 import com.sifat.MyCRM.dto.input.CreateIndividualCustomerDTO;
+import com.sifat.MyCRM.dto.input.CreateSanctionConfigDataDTO;
 import com.sifat.MyCRM.dto.input.IndividualCustomerCompareInDTO;
 import com.sifat.MyCRM.dto.output.IndividualCustomerCompareResultOutDTO;
 import com.sifat.MyCRM.dto.output.IndividualCustomerViewDTO;
@@ -45,9 +46,18 @@ public class CustomerController {
 
     @Tag(name = "CRM003 : save xml to DB") //done
     @PostMapping("/save/sanction-data")
-    public ResponseEntity<USSanctionListDBOutDTO> savedSanctionData (@RequestParam("file") MultipartFile file) throws Exception {
-        USSanctionListDBOutDTO result = sanctionService.savedSanctionData(file.getInputStream());
-        return ResponseEntity.ok(result);
+    public ResponseEntity<ResponseModelDTO> savedSanctionData (@RequestParam("file") MultipartFile file) throws Exception {
+        try {
+            USSanctionListDBOutDTO result = sanctionService.savedSanctionData(file.getInputStream());
+            ResponseModelDTO responseModelDTO = ResponseModelDTO.builder()
+                    .status(ResponseDataStatus.success.name())
+                    .message("All UN-Sanctioned XML data saved successfully")
+                    .data(result)
+                    .build();
+            return ResponseEntity.ok(responseModelDTO);
+        } catch (Exception e) {
+            throw  new Exception(e.getMessage());
+        }
     }
 
     @Tag(name = "CRM004 : view single customer data")    //done
@@ -92,4 +102,18 @@ public class CustomerController {
             throw new Exception(e.getMessage());
         }
     }
+
+
+    @Tag(name = "CRM008 : save aml sanction configuration data")    //done
+    @PostMapping("/save/configuration/sanction-data")
+    public ResponseEntity<ResponseModelDTO> saveSanctionConfigData (@RequestBody @Valid CreateSanctionConfigDataDTO inDTO) {
+        sanctionComparisonService.saveSanctionConfigData(inDTO);
+        ResponseModelDTO responseModelDTO = ResponseModelDTO.builder().build();
+        responseModelDTO.setStatus(ResponseDataStatus.success.name());
+        responseModelDTO.setMessage("Sanction configuration data updated successfully");
+        responseModelDTO.setData(null);
+        return ResponseEntity.ok(responseModelDTO);
+    }
+
+
 }

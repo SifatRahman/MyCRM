@@ -1,15 +1,20 @@
 package com.sifat.MyCRM.service;
 
+import com.sifat.MyCRM.config.AMLSanctionConfigurationService;
 import com.sifat.MyCRM.config.FuzzyMatcher;
 import com.sifat.MyCRM.config.SanctionsScoringEngine;
+import com.sifat.MyCRM.dto.input.CreateSanctionConfigDataDTO;
 import com.sifat.MyCRM.dto.input.CustomerAMLIndividualPermanentAddressInDTO;
 import com.sifat.MyCRM.dto.input.CustomerBasicDetailDTO;
 import com.sifat.MyCRM.dto.input.IndividualCustomerCompareInDTO;
 import com.sifat.MyCRM.dto.output.IndividualCustomerCompareResultOutDTO;
+import com.sifat.MyCRM.entity.AMLSanctionConfiguration;
 import com.sifat.MyCRM.entity.SanctionIndividual;
 import com.sifat.MyCRM.exception.ResourceNotFoundException;
+import com.sifat.MyCRM.repository.AMLSanctionConfigurationRepository;
 import com.sifat.MyCRM.repository.SanctionIndividualRepository;
 import com.sifat.MyCRM.utility.SanctionMatchStatus;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +23,6 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +30,8 @@ public class SanctionComparisonService extends BaseService {
 
     private final FuzzyMatcher fuzzyMatcher;
     private final SanctionsScoringEngine sanctionsScoringEngine;
+    private final AMLSanctionConfigurationService configurationService;
+    private final AMLSanctionConfigurationRepository amlSanctionConfigurationRepository;
     private final SanctionIndividualRepository sanctionIndividualRepository;
 
 
@@ -93,11 +99,13 @@ public class SanctionComparisonService extends BaseService {
     }
 
     private String determineStatus(double overallScore) {
-        if (overallScore >= 0.85) {
+        AMLSanctionConfiguration config = configurationService.getConfiguration();
+
+        if (overallScore >= config.getHighRiskStartScore()) {
             return SanctionMatchStatus.HIGH_POTENTIAL_MATCHED.name();
         }
 
-        if (overallScore <= 0.85 && overallScore >= 0.70) {
+        if (overallScore >= config.getPotentialMatchStartScore()) {
             return SanctionMatchStatus.POTENTIAL_MATCHED.name();
         }
 
@@ -109,5 +117,38 @@ public class SanctionComparisonService extends BaseService {
                 + individual.getThirdName() + " " + individual.getFourthName();
     }
 
+    public void saveSanctionConfigData(@Valid CreateSanctionConfigDataDTO inDTO) {
+        try{
+
+        AMLSanctionConfiguration asc = amlSanctionConfigurationRepository.findFirstBy().orElseThrow(
+                () -> new ResourceNotFoundException("AML sanction configuration not found!")
+        );
+        var sumAfter = inDTO.getAfter_score_name_weight()+inDTO.getAfter_score_dob_weight()
+                +inDTO.getAfter_score_doc_weight()+inDTO.getAfter_score_nationality_weight()
+                +inDTO.getAfter_score_address_weight()+inDTO.getAfter_score_pob_weight();
+        if(sumAfter!=1.00){
+            throw new ResourceNotFoundException("Sum of after score weight must be 1.00!");
+        }
+
+        asc.setOnlyExactYearMatchDobScore(inDTO.getOnly_exact_year_matched_dob_score());
+        asc.setYearInBetweenGivenTwoYearMatchDobScore(inDTO.getYear_in_between_given_two_year_matched_dob_score());
+        asc.setOnlyYearMatchedWithApproximateYearDobScore(inDTO.getOnly_year_matched_with_approximate_year_dob_score());
+        asc.setAfterScoreNameWeight(inDTO.getAfter_score_name_weight());
+        asc.setAfterScoreDobWeight(inDTO.getAfter_score_dob_weight());
+        asc.setAfterScoreDocWeight(inDTO.getAfter_score_doc_weight());
+        asc.setAfterScoreNationalityWeight(inDTO.getAfter_score_nationality_weight());
+        asc.setAfterScoreAddressWeight(inDTO.getAfter_score_address_weight());
+        asc.setAfterScorePobWeight(inDTO.getAfter_score_pob_weight());
+        asc.setHighRiskStartScore(inDTO.getHigh_risk_start_score());
+        asc.setPotentialMatchStartScore(inDTO.getPotential_match_start_score());
+        asc.setSanctionClearTillScore(inDTO.getSanction_clear_till_score());
+
+        amlSanctionConfigurationRepository.save(asc);
+        configurationService.reload();
+
+        } catch (Exception e) {
+            throw new ResourceNotFoundException(e.getMessage());
+        }
+    }
 }
 

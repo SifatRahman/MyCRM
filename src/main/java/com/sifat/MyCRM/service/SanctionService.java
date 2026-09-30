@@ -13,6 +13,7 @@ import com.sifat.MyCRM.dto.input.CustomerAMLIndividualPermanentAddressInDTO;
 import com.sifat.MyCRM.dto.input.CustomerBasicDetailDTO;
 import com.sifat.MyCRM.dto.input.IndividualCustomerCompareInDTO;
 import com.sifat.MyCRM.entity.*;
+import com.sifat.MyCRM.exception.ResourceNotFoundException;
 import com.sifat.MyCRM.repository.SanctionEntityRepository;
 import com.sifat.MyCRM.repository.SanctionIndividualRepository;
 import com.sifat.MyCRM.utility.CustomerType;
@@ -36,6 +37,11 @@ public class SanctionService extends BaseService {
     public USSanctionListDBOutDTO savedSanctionData(InputStream inputStream) throws Exception {
 
         try {
+            boolean hasAnyData = sanctionIndividualRepository.hasAnyData();
+            if(hasAnyData){
+                throw new ResourceNotFoundException("UN-Sanctioned data already exists in the database!");
+            }
+
             USSanctionListDataOutDTO usSanctionListDataOutDTO = sanctionXmlService.parseXmlFile(inputStream);
             List<USSanctionIndividualDataDTO> individualXmlDataDTOs = usSanctionListDataOutDTO.getIndividuals();
             List<USSanctionEntityDataDTO> entityXmlDataDTOs = usSanctionListDataOutDTO.getEntities();
