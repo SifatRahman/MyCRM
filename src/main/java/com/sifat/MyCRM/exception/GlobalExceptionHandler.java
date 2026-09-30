@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -21,7 +23,7 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(getExceptionResponseModelDTO(ex.getMessage(),request.getRequestURI()));
+                .body(getExceptionResponseModelDTO(ex.getMessage(),request.getRequestURI(),null));
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -31,16 +33,16 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(getExceptionResponseModelDTO(ex.getMessage(),request.getRequestURI()));
+                .body(getExceptionResponseModelDTO(ex.getMessage(),request.getRequestURI(),null));
     }
 
-    private ResponseModelDTO getExceptionResponseModelDTO(String msg,String reqPath){
+    private ResponseModelDTO getExceptionResponseModelDTO(String msg,String reqPath,Object data){
         return new ResponseModelDTO(
                 ResponseDataStatus.error.name(),
                 msg,
                 reqPath,
                 LocalDateTime.now(),
-                null
+                data
         );
     }
 
@@ -49,16 +51,19 @@ public class GlobalExceptionHandler {
             MethodArgumentNotValidException ex,
             HttpServletRequest request) {
 
-        String message = ex.getBindingResult()
+        Map<String, String> errors = new LinkedHashMap<>();
+
+        ex.getBindingResult()
                 .getFieldErrors()
-                .stream()
-                .map(error ->
-                        error.getField() + ": " + error.getDefaultMessage()
-                )
-                .collect(Collectors.joining(", "));
+                .forEach(error ->
+                        errors.put(
+                                error.getField(),
+                                error.getDefaultMessage()
+                        )
+                );
 
         return ResponseEntity
                 .badRequest()
-                .body(getExceptionResponseModelDTO(ex.getMessage(),request.getRequestURI()));
+                .body(getExceptionResponseModelDTO("Validation failed",request.getRequestURI(),errors));
     }
 }
