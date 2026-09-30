@@ -7,6 +7,7 @@ import com.sifat.MyCRM.dto.output.IndividualCustomerViewDTO;
 import com.sifat.MyCRM.entity.CustomerSanctionIndividualComparisonHistory;
 import com.sifat.MyCRM.entity.IndividualCustomer;
 import com.sifat.MyCRM.entity.IndividualCustomerPermanentAddress;
+import com.sifat.MyCRM.exception.ResourceNotFoundException;
 import com.sifat.MyCRM.repository.CustomerSanctionIndividualComparisonHistoryRepository;
 import com.sifat.MyCRM.repository.IndividualCustomerPermanentAddressRepository;
 import com.sifat.MyCRM.repository.IndividualCustomerRepository;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.ReadOnlyFileSystemException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,7 +42,7 @@ public class CustomerService extends BaseService {
     }
 
     public IndividualCustomerViewDTO getIndividualCustomer(String individualCustomerId) {
-        IndividualCustomer individualCustomer = individualCustomerRepository.findById(individualCustomerId).orElseThrow(() -> new RuntimeException(
+        IndividualCustomer individualCustomer = individualCustomerRepository.findById(individualCustomerId).orElseThrow(() -> new ResourceNotFoundException(
                 "Individual customer not found with id: " + individualCustomerId
         ));
 
@@ -54,7 +56,7 @@ public class CustomerService extends BaseService {
                     .orElse(null);
         }
         IndividualCustomerPermanentAddress permanentAddress = individualCustomerPermanentAddressRepository.findByIndividualCustomer_Id(individualCustomer.getId())
-                .orElseThrow(() -> new RuntimeException("Individual customer permanent address not found!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Individual customer permanent address not found!"));
 
         IndividualCustomerPermanentAddressViewDTO individualCustomerPermanentAddress = IndividualCustomerPermanentAddressViewDTO.builder()
                 .customer_id(permanentAddress.getIndividualCustomer().getId())
@@ -123,12 +125,12 @@ public class CustomerService extends BaseService {
     public String createIndividualCustomer(CreateIndividualCustomerDTO inDTO) throws Exception {
         try {
             if (inDTO.getNid_no().isBlank() && inDTO.getPassport_no().isBlank()) {
-                throw new Exception("Either Nid or passport number must be provided!");
+                throw new ResourceNotFoundException("Either Nid or passport number must be provided!");
             }
             var existsByNID = individualCustomerRepository.findById(inDTO.getNid_no()).orElse(null);
             var existsByPass = individualCustomerRepository.findById(inDTO.getPassport_no()).orElse(null);
             if (existsByNID != null && existsByPass != null) {
-                throw new Exception("Customer with this NID Number or Passport already exists!");
+                throw new ResourceNotFoundException("Customer with this NID Number or Passport already exists!");
             }
 
             IndividualCustomer customer = new IndividualCustomer();
@@ -148,7 +150,7 @@ public class CustomerService extends BaseService {
             customer.setResidence(inDTO.getResidence());
 
             if (inDTO.getDate_of_birth().isAfter(LocalDate.now())) {
-                throw new Exception("Birth date can't be future!");
+                throw new ResourceNotFoundException("Birth date can't be future!");
             }
             customer.setDateOfBirth(inDTO.getDate_of_birth());
             customer.setNationality(inDTO.getNationality());
@@ -196,9 +198,9 @@ public class CustomerService extends BaseService {
     public List<IndividualCustomerCompareResultOutDTO> verifySavedIndividualCustomerAML(String individualCustomerId) {
         try {
             IndividualCustomer individualCustomer = individualCustomerRepository.findById(individualCustomerId).orElseThrow(() ->
-                    new RuntimeException("Customer not found!"));
+                    new ResourceNotFoundException("Customer not found!"));
             IndividualCustomerPermanentAddress customerPermanentAddress = individualCustomerPermanentAddressRepository.findByIndividualCustomer_Id(individualCustomerId).orElseThrow(() ->
-                    new RuntimeException("Customer permanent address not found!"));
+                    new ResourceNotFoundException("Customer permanent address not found!"));
 
             IndividualCustomerCompareInDTO individualCustomerCompareInDTO = getIndividualCustomerCompareInDTO(individualCustomer, customerPermanentAddress);
             List<IndividualCustomerCompareResultOutDTO> matchingResult = sanctionComparisonService.compareIndividualData(individualCustomerCompareInDTO);
