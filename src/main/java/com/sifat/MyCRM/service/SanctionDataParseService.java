@@ -9,13 +9,17 @@ import com.sifat.MyCRM.dto.external.USSanctionListDataOutDTO;
 import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualDocDTO;
 import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualPOBDataDTO;
 import com.sifat.MyCRM.dto.output.BDSanctionListDataOutDTO;
-import org.apache.pdfbox.Loader;
+//import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import technology.tabula.*;
+import technology.tabula.extractors.BasicExtractionAlgorithm;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
@@ -25,11 +29,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
-public class SanctionDataParseService {
+public class SanctionDataParseService extends BaseService {
+
+    private static final Pattern PDF_DATE_PATTERN = Pattern.compile("\\b(\\d{2}/\\d{2}/\\d{4})\\b");
+    private static final DateTimeFormatter PDF_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
 
     public USSanctionListDataOutDTO parseXmlFile(InputStream inputStream)
@@ -85,9 +93,9 @@ public class SanctionDataParseService {
             individual.setInterpol_link(getText(element, "INTERPOL_LINK"));
 
             individual.setDesignation(getLinearChildrenValuesOfOneElement(
-                            element,
-                            "DESIGNATION",
-                            "VALUE"));
+                    element,
+                    "DESIGNATION",
+                    "VALUE"));
 
             individual.setNationality(
                     getLinearChildrenValuesOfOneElement(
@@ -113,8 +121,8 @@ public class SanctionDataParseService {
                             "LAST_REVIEWED_ON",
                             "VALUE"));
 
-            individual.setIndividual_alias(getAliases(element,"INDIVIDUAL"));
-            individual.setIndividual_address(getAddress(element,"INDIVIDUAL"));
+            individual.setIndividual_alias(getAliases(element, "INDIVIDUAL"));
+            individual.setIndividual_address(getAddress(element, "INDIVIDUAL"));
 
             individual.setTitle(getLinearChildrenValuesOfOneElement(
                     element,
@@ -130,7 +138,6 @@ public class SanctionDataParseService {
 
         return individuals;
     }
-
 
 
     private List<USSanctionEntityDataDTO> parseEntities(Document document) {
@@ -176,9 +183,9 @@ public class SanctionDataParseService {
                             "LAST_REVIEWED_ON",
                             "VALUE"));
 
-            entity.setEntity_alias(getAliases(element,"ENTITY"));
+            entity.setEntity_alias(getAliases(element, "ENTITY"));
 
-            entity.setEntity_address(getAddress(element,"ENTITY"));
+            entity.setEntity_address(getAddress(element, "ENTITY"));
             entities.add(entity);
         }
 
@@ -187,26 +194,26 @@ public class SanctionDataParseService {
 
 
     private String getText(Element element,
-            String tagName) {
+                           String tagName) {
 
         NodeList nodes = element.getElementsByTagName(tagName);
         if (nodes.getLength() == 0) {
             return "";
         }
         String value = nodes.item(0)
-                        .getTextContent()
-                        .trim();
+                .getTextContent()
+                .trim();
 
         return value.isEmpty() ? "" : value;
     }
 
 
     private List<String> getLinearChildrenValuesOfOneElement(Element parentElement,
-                                       String elementTag,
-                                       String childTag){
+                                                             String elementTag,
+                                                             String childTag) {
         List<String> values = new ArrayList<>();
         NodeList foundElements = parentElement.getElementsByTagName(elementTag);
-        if(foundElements.getLength()==0){
+        if (foundElements.getLength() == 0) {
             return values;
         }
 
@@ -228,7 +235,7 @@ public class SanctionDataParseService {
     private List<USSanctionAliasDTO> getAliases(Element individual, String customerType) {
         List<USSanctionAliasDTO> aliases = new ArrayList<>();
 
-        NodeList nodes = individual.getElementsByTagName(String.format(customerType+"_ALIAS"));
+        NodeList nodes = individual.getElementsByTagName(String.format(customerType + "_ALIAS"));
 
         for (int i = 0; i < nodes.getLength(); i++) {
             Element alias = (Element) nodes.item(i);
@@ -243,7 +250,7 @@ public class SanctionDataParseService {
     private List<USSanctionAddressDataDTO> getAddress(Element individual, String customerType) {
         List<USSanctionAddressDataDTO> aliases = new ArrayList<>();
 
-        NodeList nodes = individual.getElementsByTagName(String.format(customerType+"_ADDRESS"));
+        NodeList nodes = individual.getElementsByTagName(String.format(customerType + "_ADDRESS"));
 
         for (int i = 0; i < nodes.getLength(); i++) {
             Element alias = (Element) nodes.item(i);
@@ -285,7 +292,6 @@ public class SanctionDataParseService {
     }
 
 
-
     private List<USSanctionIndividualPOBDataDTO> getIndividualPOB(Element individual) {
         List<USSanctionIndividualPOBDataDTO> docDTOS = new ArrayList<>();
         NodeList nodes = individual.getElementsByTagName("INDIVIDUAL_PLACE_OF_BIRTH");
@@ -323,161 +329,146 @@ public class SanctionDataParseService {
         return docDTOS;
     }
 
-    public List<BDSanctionListDataOutDTO> parseBDSanctionPDFFile(MultipartFile file) throws IOException {
 
-        byte[] pdfBytes = file.getBytes();
-        try (var document = Loader.loadPDF(pdfBytes)) {
-            PDFTextStripper pdfTextStripper = new PDFTextStripper();
-            var text = pdfTextStripper.getText(document);
-            var normalizedText = normalizeText(text);
-            return parseRecords(normalizedText);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public String normalizeText(String text){
-        return text.replace("-"," ")
-                .replaceAll("[ \\t]+", " ")
-                // Remove trailing spaces from lines
-                .replaceAll("(?m)[ \\t]+$", "")
-                .trim();
-    }
-
-    private List<BDSanctionListDataOutDTO> parseRecords(String text) {
+    public List<BDSanctionListDataOutDTO> extractPDFFinalData(InputStream inputStream) {
 
         List<BDSanctionListDataOutDTO> result = new ArrayList<>();
-        Pattern RECORD_PATTERN = Pattern.compile("(?ms)^\\s*(\\d+)\\.\\s+(.*?)(?=^\\s*\\d+\\.\\s+|\\z)");
-        Matcher matcher = RECORD_PATTERN.matcher(text);
 
-        while (matcher.find()) {
-            Integer sl = Integer.parseInt(matcher.group(1));
-            String recordText = matcher.group(2).trim();
-            BDSanctionListDataOutDTO dto = parseRecord(sl, recordText);
+        try {
+            List<BDSanctionListDataOutDTO> dataOutDTOS = extractPDFText(inputStream);
+            dataOutDTOS = dataOutDTOS.subList(2, dataOutDTOS.size() - 1);
 
-            result.add(dto);
+            for (int i = 0; i < dataOutDTOS.size(); i++) {
+                var outerDTO = dataOutDTOS.get(i);
+                if (outerDTO.getSl() == null) {
+                    continue;
+                }
+                StringBuilder address = new StringBuilder(outerDTO.getAddressOfEntity());
+                StringBuilder name = new StringBuilder(outerDTO.getNameOfEntity());
+
+
+                for (int j = i + 1; j < dataOutDTOS.size(); j++) {
+                    var innerDTO = dataOutDTOS.get(j);
+
+                    if (dataOutDTOS.get(j).getSl() != null && Objects.equals(innerDTO.getSl(), outerDTO.getSl())) {
+                        continue;
+                    }
+                    if (innerDTO.getSl() != null && innerDTO.getSl() == outerDTO.getSl() + 1) {
+                        break;
+                    }
+                    address.append(" ").append(innerDTO.getAddressOfEntity());
+                    name.append(" ").append(innerDTO.getNameOfEntity());
+
+                }
+
+                outerDTO.setAddressOfEntity(address.toString());
+                outerDTO.setNameOfEntity(name.toString());
+                result.add(outerDTO);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return result;
+    }
+
+
+    public List<BDSanctionListDataOutDTO> extractPDFText(InputStream inputStream) throws Exception {
+
+        List<BDSanctionListDataOutDTO> result = new ArrayList<>();
+
+        try (PDDocument document = PDDocument.load(inputStream)) {
+
+            ObjectExtractor extractor = new ObjectExtractor(document);
+
+            BasicExtractionAlgorithm extractionAlgorithm =
+                    new BasicExtractionAlgorithm();
+
+            for (PageIterator it = extractor.extract(); it.hasNext(); ) {
+                Page page = it.next();
+
+                List<Table> tables = extractionAlgorithm.extract(page);
+
+                for (Table table : tables) {
+
+                    for (List<RectangularTextContainer> row : table.getRows()) {
+                        BDSanctionListDataOutDTO dto = parseRow(row);
+
+                        if (dto != null && !hasNoCellData(dto)) {
+                            result.add(dto);
+                        }
+                    }
+                }
+            }
         }
 
         return result;
     }
 
-    private BDSanctionListDataOutDTO parseRecord(Integer sl, String recordText) {
+    private boolean hasNoCellData(BDSanctionListDataOutDTO dto) {
+        return isBlankStringOrNull(dto.getNameOfEntity()) && isBlankStringOrNull(dto.getAddressOfEntity())
+                && isNullOrEmptyDate(dto.getDateOfProscription()) && isBlankStringOrNull(dto.getComment());
+    }
 
-        BDSanctionListDataOutDTO dto = new BDSanctionListDataOutDTO();
-        dto.setSl(sl);
-        var DATE_PATTERN = Pattern.compile("\\b(\\d{2}/\\d{2}/\\d{4})\\b");
-        Matcher dateMatcher = DATE_PATTERN.matcher(recordText);
+    private BDSanctionListDataOutDTO parseRow(
+            List<RectangularTextContainer> row) {
 
-        if (!dateMatcher.find()) {
-            throw new IllegalArgumentException(
-                    "Date not found for SL: " + sl
-            );
+        if (row == null || row.isEmpty()) {
+            return null;
         }
 
-        String dateText = dateMatcher.group(1);
+        List<String> cells = row.stream()
+                .map(RectangularTextContainer::getText)
+                .map(this::cleanText)
+                .toList();
 
-        dto.setDateOfProscription(
-                LocalDate.parse(
-                        dateText,
-                        DateTimeFormatter.ofPattern("dd/MM/yyyy")
-                )
-        );
+        Integer serialNumber = parseInteger(cells.getFirst().replaceAll("\\.$", ""));
 
-        String beforeDate =
-                recordText.substring(
-                        0,
-                        dateMatcher.start()
-                ).trim();
 
-        String afterDate =
-                recordText.substring(
-                        dateMatcher.end()
-                ).trim();
+        BDSanctionListDataOutDTO dto = new BDSanctionListDataOutDTO();
 
-        dto.setComment(
-                afterDate.isBlank()
-                        ? null
-                        : normalizeText(afterDate)
-        );
+        dto.setSl(serialNumber);
+        dto.setNameOfEntity(cells.get(1));
+        dto.setAddressOfEntity(cells.get(2));
 
-        parseNameAndAddress(dto, beforeDate);
+        if (!cells.get(3).isBlank()) {
+            Matcher dateMatcher = PDF_DATE_PATTERN.matcher(cells.get(3));
+            if (dateMatcher.find()) {
+                dto.setDateOfProscription(
+                        LocalDate.parse(
+                                cells.get(3),
+                                PDF_DATE_FORMATTER
+                        )
+                );
+            }
+        }
+
+        if (cells.size() >= 5) {
+            dto.setComment(cells.get(4));
+        }
 
         return dto;
     }
 
-    private void parseNameAndAddress(
-            BDSanctionListDataOutDTO dto,
-            String text
-    ) {
+    private String cleanText(String text) {
 
-        String[] lines = text.split("\\R");
-
-        List<String> cleanedLines = new ArrayList<>();
-
-        for (String line : lines) {
-
-            line = line.trim();
-
-            if (!line.isBlank()) {
-                cleanedLines.add(line);
-            }
+        if (text == null) {
+            return "";
         }
 
-        if (cleanedLines.isEmpty()) {
-            return;
-        }
-
-        int addressStart = findAddressStart(cleanedLines);
-
-        if (addressStart == -1) {
-
-            dto.setNameOfEntity(
-                    String.join(" ", cleanedLines)
-            );
-
-            dto.setAddressOfEntity(null);
-
-            return;
-        }
-
-        String name = String.join(
-                " ",
-                cleanedLines.subList(0, addressStart)
-        );
-
-        String address = String.join(
-                " ",
-                cleanedLines.subList(
-                        addressStart,
-                        cleanedLines.size()
-                )
-        );
-
-        dto.setNameOfEntity(name);
-        dto.setAddressOfEntity(address);
+        return text
+                .replace('\n', ' ')
+                .replace('\r', ' ')
+                .replaceAll("\\s+", " ")
+                .trim();
     }
 
-    private int findAddressStart(List<String> lines) {
+    private Integer parseInteger(String value) {
 
-        for (int i = 0; i < lines.size(); i++) {
-
-            String line = lines.get(i).toLowerCase();
-
-            if (line.contains("no specific address")
-                    || line.contains("address")
-                    || line.contains("home")
-                    || line.contains("road")
-                    || line.contains("p.s.")
-                    || line.contains("mansion")
-                    || line.contains("lane")
-                    || line.contains("dhaka")
-                    || line.contains("rajshahi")
-                    || line.contains("floor")) {
-
-                return i;
-            }
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            return null;
         }
-
-        return -1;
     }
+
 }

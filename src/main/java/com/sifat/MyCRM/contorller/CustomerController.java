@@ -120,7 +120,7 @@ public class CustomerController {
     @Tag(name = "CRM009 : upload pdf file to view")   //done
     @PostMapping("/upload/bd-sanction/pdf-file")
     public ResponseEntity<List<BDSanctionListDataOutDTO>> uploadBDSanctionPDF(@RequestParam("file") MultipartFile file) throws Exception {
-        List<BDSanctionListDataOutDTO> result = sanctionDataParseService.parseBDSanctionPDFFile(file);
+        List<BDSanctionListDataOutDTO> result = sanctionDataParseService.extractPDFFinalData(file.getInputStream());
         return ResponseEntity.ok(result);
     }
 }
