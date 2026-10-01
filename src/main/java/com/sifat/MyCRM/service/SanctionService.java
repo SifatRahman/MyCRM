@@ -28,7 +28,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class SanctionService extends BaseService {
-    private final SanctionXmlService sanctionXmlService;
+    private final SanctionDataParseService sanctionDataParseService;
     private final SanctionIndividualRepository sanctionIndividualRepository;
     private final SanctionEntityRepository sanctionEntityRepository;
 
@@ -42,7 +42,7 @@ public class SanctionService extends BaseService {
                 throw new ResourceNotFoundException("UN-Sanctioned data already exists in the database!");
             }
 
-            USSanctionListDataOutDTO usSanctionListDataOutDTO = sanctionXmlService.parseXmlFile(inputStream);
+            USSanctionListDataOutDTO usSanctionListDataOutDTO = sanctionDataParseService.parseXmlFile(inputStream);
             List<USSanctionIndividualDataDTO> individualXmlDataDTOs = usSanctionListDataOutDTO.getIndividuals();
             List<USSanctionEntityDataDTO> entityXmlDataDTOs = usSanctionListDataOutDTO.getEntities();
 

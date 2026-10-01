@@ -8,19 +8,28 @@ import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualDataDTO;
 import com.sifat.MyCRM.dto.external.USSanctionListDataOutDTO;
 import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualDocDTO;
 import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualPOBDataDTO;
+import com.sifat.MyCRM.dto.output.BDSanctionListDataOutDTO;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
-public class SanctionXmlService {
+public class SanctionDataParseService {
 
 
     public USSanctionListDataOutDTO parseXmlFile(InputStream inputStream)
@@ -312,5 +321,163 @@ public class SanctionXmlService {
             docDTOS.add(docDTO);
         }
         return docDTOS;
+    }
+
+    public List<BDSanctionListDataOutDTO> parseBDSanctionPDFFile(MultipartFile file) throws IOException {
+
+        byte[] pdfBytes = file.getBytes();
+        try (var document = Loader.loadPDF(pdfBytes)) {
+            PDFTextStripper pdfTextStripper = new PDFTextStripper();
+            var text = pdfTextStripper.getText(document);
+            var normalizedText = normalizeText(text);
+            return parseRecords(normalizedText);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String normalizeText(String text){
+        return text.replace("-"," ")
+                .replaceAll("[ \\t]+", " ")
+                // Remove trailing spaces from lines
+                .replaceAll("(?m)[ \\t]+$", "")
+                .trim();
+    }
+
+    private List<BDSanctionListDataOutDTO> parseRecords(String text) {
+
+        List<BDSanctionListDataOutDTO> result = new ArrayList<>();
+        Pattern RECORD_PATTERN = Pattern.compile("(?ms)^\\s*(\\d+)\\.\\s+(.*?)(?=^\\s*\\d+\\.\\s+|\\z)");
+        Matcher matcher = RECORD_PATTERN.matcher(text);
+
+        while (matcher.find()) {
+            Integer sl = Integer.parseInt(matcher.group(1));
+            String recordText = matcher.group(2).trim();
+            BDSanctionListDataOutDTO dto = parseRecord(sl, recordText);
+
+            result.add(dto);
+        }
+
+        return result;
+    }
+
+    private BDSanctionListDataOutDTO parseRecord(Integer sl, String recordText) {
+
+        BDSanctionListDataOutDTO dto = new BDSanctionListDataOutDTO();
+        dto.setSl(sl);
+        var DATE_PATTERN = Pattern.compile("\\b(\\d{2}/\\d{2}/\\d{4})\\b");
+        Matcher dateMatcher = DATE_PATTERN.matcher(recordText);
+
+        if (!dateMatcher.find()) {
+            throw new IllegalArgumentException(
+                    "Date not found for SL: " + sl
+            );
+        }
+
+        String dateText = dateMatcher.group(1);
+
+        dto.setDateOfProscription(
+                LocalDate.parse(
+                        dateText,
+                        DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                )
+        );
+
+        String beforeDate =
+                recordText.substring(
+                        0,
+                        dateMatcher.start()
+                ).trim();
+
+        String afterDate =
+                recordText.substring(
+                        dateMatcher.end()
+                ).trim();
+
+        dto.setComment(
+                afterDate.isBlank()
+                        ? null
+                        : normalizeText(afterDate)
+        );
+
+        parseNameAndAddress(dto, beforeDate);
+
+        return dto;
+    }
+
+    private void parseNameAndAddress(
+            BDSanctionListDataOutDTO dto,
+            String text
+    ) {
+
+        String[] lines = text.split("\\R");
+
+        List<String> cleanedLines = new ArrayList<>();
+
+        for (String line : lines) {
+
+            line = line.trim();
+
+            if (!line.isBlank()) {
+                cleanedLines.add(line);
+            }
+        }
+
+        if (cleanedLines.isEmpty()) {
+            return;
+        }
+
+        int addressStart = findAddressStart(cleanedLines);
+
+        if (addressStart == -1) {
+
+            dto.setNameOfEntity(
+                    String.join(" ", cleanedLines)
+            );
+
+            dto.setAddressOfEntity(null);
+
+            return;
+        }
+
+        String name = String.join(
+                " ",
+                cleanedLines.subList(0, addressStart)
+        );
+
+        String address = String.join(
+                " ",
+                cleanedLines.subList(
+                        addressStart,
+                        cleanedLines.size()
+                )
+        );
+
+        dto.setNameOfEntity(name);
+        dto.setAddressOfEntity(address);
+    }
+
+    private int findAddressStart(List<String> lines) {
+
+        for (int i = 0; i < lines.size(); i++) {
+
+            String line = lines.get(i).toLowerCase();
+
+            if (line.contains("no specific address")
+                    || line.contains("address")
+                    || line.contains("home")
+                    || line.contains("road")
+                    || line.contains("p.s.")
+                    || line.contains("mansion")
+                    || line.contains("lane")
+                    || line.contains("dhaka")
+                    || line.contains("rajshahi")
+                    || line.contains("floor")) {
+
+                return i;
+            }
+        }
+
+        return -1;
     }
 }

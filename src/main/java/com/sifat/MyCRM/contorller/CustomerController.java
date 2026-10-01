@@ -6,12 +6,13 @@ import com.sifat.MyCRM.dto.helper.ResponseModelDTO;
 import com.sifat.MyCRM.dto.input.CreateIndividualCustomerDTO;
 import com.sifat.MyCRM.dto.input.CreateSanctionConfigDataDTO;
 import com.sifat.MyCRM.dto.input.IndividualCustomerCompareInDTO;
+import com.sifat.MyCRM.dto.output.BDSanctionListDataOutDTO;
 import com.sifat.MyCRM.dto.output.IndividualCustomerCompareResultOutDTO;
 import com.sifat.MyCRM.dto.output.IndividualCustomerViewDTO;
 import com.sifat.MyCRM.service.CustomerService;
 import com.sifat.MyCRM.service.SanctionComparisonService;
 import com.sifat.MyCRM.service.SanctionService;
-import com.sifat.MyCRM.service.SanctionXmlService;
+import com.sifat.MyCRM.service.SanctionDataParseService;
 import com.sifat.MyCRM.utility.ResponseDataStatus;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -27,7 +28,7 @@ import java.util.List;
 public class CustomerController {
 
     private final CustomerService customerService;
-    private final SanctionXmlService sanctionXmlService;
+    private final SanctionDataParseService sanctionDataParseService;
     private final SanctionService sanctionService;
     private final SanctionComparisonService sanctionComparisonService;
 
@@ -40,7 +41,7 @@ public class CustomerController {
     @Tag(name = "CRM002 : upload un-xml file to view")   //done
     @PostMapping("/upload/sanction/xml-file")
     public ResponseEntity<USSanctionListDataOutDTO> upload(@RequestParam("file") MultipartFile file) throws Exception {
-        USSanctionListDataOutDTO result = sanctionXmlService.parseXmlFile(file.getInputStream());
+        USSanctionListDataOutDTO result = sanctionDataParseService.parseXmlFile(file.getInputStream());
         return ResponseEntity.ok(result);
     }
 
@@ -116,4 +117,10 @@ public class CustomerController {
     }
 
 
+    @Tag(name = "CRM009 : upload pdf file to view")   //done
+    @PostMapping("/upload/bd-sanction/pdf-file")
+    public ResponseEntity<List<BDSanctionListDataOutDTO>> uploadBDSanctionPDF(@RequestParam("file") MultipartFile file) throws Exception {
+        List<BDSanctionListDataOutDTO> result = sanctionDataParseService.parseBDSanctionPDFFile(file);
+        return ResponseEntity.ok(result);
+    }
 }
