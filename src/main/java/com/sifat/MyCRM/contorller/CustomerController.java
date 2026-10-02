@@ -3,10 +3,7 @@ package com.sifat.MyCRM.contorller;
 import com.sifat.MyCRM.dto.external.USSanctionListDBOutDTO;
 import com.sifat.MyCRM.dto.external.USSanctionListDataOutDTO;
 import com.sifat.MyCRM.dto.helper.ResponseModelDTO;
-import com.sifat.MyCRM.dto.input.CreateEntityCustomerDTO;
-import com.sifat.MyCRM.dto.input.CreateIndividualCustomerDTO;
-import com.sifat.MyCRM.dto.input.CreateSanctionConfigDataDTO;
-import com.sifat.MyCRM.dto.input.IndividualCustomerCompareInDTO;
+import com.sifat.MyCRM.dto.input.*;
 import com.sifat.MyCRM.dto.output.BDSanctionListDataOutDTO;
 import com.sifat.MyCRM.dto.output.EntityCustomerCompareResultOutDTO;
 import com.sifat.MyCRM.dto.output.IndividualCustomerCompareResultOutDTO;
@@ -127,7 +124,7 @@ public class CustomerController {
     }
 
     @Tag(name = "CRM010 : entity customer creation")
-    @GetMapping("/create/entity-customer")
+    @PostMapping("/create/entity-customer")
     public ResponseEntity<ResponseModelDTO> createEntityCustomer (@RequestBody @Valid CreateEntityCustomerDTO createEntityCustomerDTO) throws Exception {
         try {
             String savedCustomerId = customerService.createEntityCustomer(createEntityCustomerDTO);
@@ -154,6 +151,13 @@ public class CustomerController {
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
+    }
+
+    @Tag(name = "CRM012 : compare dto-passed entity customer data (GET SCORE)")    //done
+    @PostMapping("/compare/entity/sanction-data")
+    public ResponseEntity<List<EntityCustomerCompareResultOutDTO>> compareEntityData (@RequestBody @Valid EntityCustomerCompareInDTO inDTO) throws Exception {
+        List<EntityCustomerCompareResultOutDTO> outDTO =  sanctionComparisonService.compareEntityData(inDTO);
+        return ResponseEntity.ok(outDTO);
     }
 
 }

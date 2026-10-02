@@ -49,12 +49,21 @@ public class AMLSanctionConfiguration {
     @Column(name = "after_score_entity_address_weight",nullable = false)
     private double afterScoreEntityAddressWeight;
 
-    @Column(name = "high_risk_start_score",nullable = false)
-    private double highRiskStartScore;
+    @Column(name = "individual_high_risk_start_score",nullable = false)
+    private double individualHighRiskStartScore;
 
-    @Column(name = "potential_match_start_score",nullable = false)
-    private double potentialMatchStartScore;
+    @Column(name = "individual_potential_match_start_score",nullable = false)
+    private double individualPotentialMatchStartScore;
 
-    @Column(name = "sanction_clear_till_score",nullable = false)
-    private double sanctionClearTillScore;
+    @Column(name = "individual_sanction_clear_till_score",nullable = false)
+    private double individualSanctionClearTillScore;
+
+    @Column(name = "entity_high_risk_start_score",nullable = false)
+    private double entityHighRiskStartScore;
+
+    @Column(name = "entity_potential_match_start_score",nullable = false)
+    private double entityPotentialMatchStartScore;
+
+    @Column(name = "entity_sanction_clear_till_score",nullable = false)
+    private double entitySanctionClearTillScore;
 }

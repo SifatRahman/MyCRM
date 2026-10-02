@@ -40,11 +40,16 @@ public class AMLSanctionConfigurationService {
                         .afterScoreIndividualNationalityWeight(0.15)
                         .afterScoreIndividualAddressWeight(0.05)
                         .afterScoreIndividualPobWeight(0.05)
-                        .afterScoreEntityNameWeight(0.70)
-                        .afterScoreEntityAddressWeight(0.30)
-                        .highRiskStartScore(0.85)
-                        .potentialMatchStartScore(0.70)
-                        .sanctionClearTillScore(0.65)
+                        .afterScoreEntityNameWeight(0.60)
+                        .afterScoreEntityAddressWeight(0.40)
+
+                        .individualHighRiskStartScore(0.85)
+                        .individualPotentialMatchStartScore(0.70)
+                        .individualSanctionClearTillScore(0.65)
+
+                        .entityHighRiskStartScore(0.92)
+                        .entityPotentialMatchStartScore(0.85)
+                        .entitySanctionClearTillScore(0.75)
                         .build();
 
         return repository.save(config);

@@ -9,9 +9,6 @@ import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualDOBDTO;
 import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualDataDTO;
 import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualDocDTO;
 import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualPOBDataDTO;
-import com.sifat.MyCRM.dto.input.CustomerAMLIndividualPermanentAddressInDTO;
-import com.sifat.MyCRM.dto.input.CustomerBasicDetailDTO;
-import com.sifat.MyCRM.dto.input.IndividualCustomerCompareInDTO;
 import com.sifat.MyCRM.entity.*;
 import com.sifat.MyCRM.exception.ResourceNotFoundException;
 import com.sifat.MyCRM.repository.SanctionEntityRepository;
@@ -24,6 +21,7 @@ import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import static com.sifat.MyCRM.utility.OrganizationEntitySource.UN;
 
 @Service
 @RequiredArgsConstructor
@@ -181,6 +179,7 @@ public class SanctionService extends BaseService {
                                     .state_province(e.getState_province())
                                     .country(e.getCountry())
                                     .note(e.getNote())
+                                    .source(UN.name())
                                     .build();
                             individualAddresses.add(individualAddress);
                         });
@@ -398,10 +397,12 @@ public class SanctionService extends BaseService {
                                     .state_province(e.getState_province())
                                     .country(e.getCountry())
                                     .note(e.getNote())
+                                    .source(UN.name())
                                     .build();
                             entityAddresses.add(entityAddress);
                         });
                         sanctionentity.setEntityAddress(entityAddresses);
+                        sanctionentity.setSource(UN.name());
 
                         return sanctionentity;
                     }).toList();

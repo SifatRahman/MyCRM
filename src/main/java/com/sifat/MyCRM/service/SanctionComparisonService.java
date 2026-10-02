@@ -81,7 +81,7 @@ public class SanctionComparisonService extends BaseService {
                                 BigDecimal.valueOf(nationalityScore).setScale(2, RoundingMode.HALF_UP),
                                 BigDecimal.valueOf(overallScore).setScale(2, RoundingMode.HALF_UP),
                                 overallScoreString + "%",
-                                determineStatus(overallScore)
+                                determineIndividualStatus(overallScore)
                         )
                 );
             }
@@ -99,14 +99,14 @@ public class SanctionComparisonService extends BaseService {
         }
     }
 
-    private String determineStatus(double overallScore) {
+    private String determineIndividualStatus(double overallScore) {
         AMLSanctionConfiguration config = configurationService.getConfiguration();
 
-        if (overallScore >= config.getHighRiskStartScore()) {
+        if (overallScore >= config.getIndividualHighRiskStartScore()) {
             return SanctionMatchStatus.HIGH_POTENTIAL_MATCHED.name();
         }
 
-        if (overallScore >= config.getPotentialMatchStartScore()) {
+        if (overallScore >= config.getIndividualPotentialMatchStartScore()) {
             return SanctionMatchStatus.POTENTIAL_MATCHED.name();
         }
 
@@ -140,9 +140,9 @@ public class SanctionComparisonService extends BaseService {
         asc.setAfterScoreIndividualNationalityWeight(inDTO.getAfter_score_nationality_weight());
         asc.setAfterScoreIndividualAddressWeight(inDTO.getAfter_score_address_weight());
         asc.setAfterScoreIndividualPobWeight(inDTO.getAfter_score_pob_weight());
-        asc.setHighRiskStartScore(inDTO.getHigh_risk_start_score());
-        asc.setPotentialMatchStartScore(inDTO.getPotential_match_start_score());
-        asc.setSanctionClearTillScore(inDTO.getSanction_clear_till_score());
+        asc.setIndividualHighRiskStartScore(inDTO.getHigh_risk_start_score());
+        asc.setIndividualPotentialMatchStartScore(inDTO.getPotential_match_start_score());
+        asc.setIndividualSanctionClearTillScore(inDTO.getSanction_clear_till_score());
 
         amlSanctionConfigurationRepository.save(asc);
         configurationService.reload();
@@ -182,7 +182,7 @@ public class SanctionComparisonService extends BaseService {
                                 BigDecimal.valueOf(addressScore).setScale(2, RoundingMode.HALF_UP),
                                 BigDecimal.valueOf(overallScore).setScale(2, RoundingMode.HALF_UP),
                                 overallScoreString + "%",
-                                determineStatus(overallScore)
+                        determineEntityStatus(overallScore)
                         )
                 );
             }
@@ -198,6 +198,20 @@ public class SanctionComparisonService extends BaseService {
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
+    }
+
+    private String determineEntityStatus(double overallScore) {
+        AMLSanctionConfiguration config = configurationService.getConfiguration();
+
+        if (overallScore >= config.getEntityHighRiskStartScore()) {
+            return SanctionMatchStatus.HIGH_POTENTIAL_MATCHED.name();
+        }
+
+        if (overallScore >= config.getIndividualPotentialMatchStartScore()) {
+            return SanctionMatchStatus.POTENTIAL_MATCHED.name();
+        }
+
+        return SanctionMatchStatus.CLEAR.name();
     }
 }
 

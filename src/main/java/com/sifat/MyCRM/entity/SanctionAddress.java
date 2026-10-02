@@ -48,4 +48,7 @@ public class SanctionAddress {
 
     @Column(name = "note",columnDefinition = "TEXT")
     private String note;
+
+    @Column(name = "source",nullable = false)
+    private String source;
 }

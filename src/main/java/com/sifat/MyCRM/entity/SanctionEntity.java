@@ -58,6 +58,9 @@ public class SanctionEntity {
     @Column(name = "interpol_link", length = 1200)
     private String interpolLink;
 
+    @Column(name = "source",nullable = false)
+    private String source;
+
 
     @OneToMany(
             mappedBy = "entity",
