@@ -6,39 +6,24 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
 @Entity
-@Table(name = "individual_customer")
+@Table(name = "entity_customer")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class IndividualCustomer {
-
+public class EntityCustomer {
     @Id
     @Column(name = "id", nullable = false, length = 128)
     private String id;
 
-    @OneToMany(mappedBy = "individualCustomer",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<CustomerSanctionIndividualComparisonHistory> sanctionIndividualComparisonHistory;
+    @OneToMany(mappedBy = "entityCustomer",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<CustomerSanctionEntityComparisonHistory> sanctionEntityComparisonHistory;
 
     @Column(name = "full_name", nullable = false)
     private String fullName;
-
-    @Column(name = "full_name2")
-    private String fullName2;
-
-    @Column(name = "family_name")
-    private String familyName;
-
-    @Column(name = "short_name")
-    private String shortName;
-
-    @Column(name = "mnemonic")
-    private String mnemonic;
-
-    @Column(name = "gender")
-    private String gender; //male, female, third gender
 
     @Column(name = "account_officer")
     private Integer accountOfficer;
@@ -61,30 +46,6 @@ public class IndividualCustomer {
     @Column(name = "residence")
     private String residence; //All BD
 
-    @Column(name = "date_of_birth",nullable = false)
-    private LocalDate dateOfBirth;
-
-    @Column(name = "nationality",nullable = false)
-    private String nationality;
-
-    @Column(name = "nid_no")
-    private String nidNo; //nid_number
-
-    @Column(name = "passport_no")
-    private String passportNo; //passport_no
-
-    @Column(name = "father_name",nullable = false)
-    private String fatherName;
-
-    @Column(name = "mother_name",nullable = false)
-    private String motherName;
-
-    @Column(name = "marital_status",nullable = false)
-    private String maritalStatus;
-
-    @Column(name = "spouse")
-    private String spouse;
-
     @Column(name = "cb_sector_code")
     private String cbSectorCode;
 
@@ -99,5 +60,4 @@ public class IndividualCustomer {
 
     @Column(name = "timestamp")
     private LocalDateTime timestamp;
-
 }

@@ -68,6 +68,17 @@ public class CreateSanctionConfigDataDTO {
     @DecimalMax("1.0")
     private Double after_score_pob_weight;
 
+    @NotNull
+    @DecimalMin("0.0")
+    @DecimalMax("1.0")
+    private Double after_score_entity_name_weight;
+
+
+    @NotNull
+    @DecimalMin("0.0")
+    @DecimalMax("1.0")
+    private Double after_score_entity_address_weight;
+
 
     @NotNull
     @DecimalMin("0.0")

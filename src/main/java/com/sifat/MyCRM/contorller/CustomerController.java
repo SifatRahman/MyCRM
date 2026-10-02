@@ -3,10 +3,12 @@ package com.sifat.MyCRM.contorller;
 import com.sifat.MyCRM.dto.external.USSanctionListDBOutDTO;
 import com.sifat.MyCRM.dto.external.USSanctionListDataOutDTO;
 import com.sifat.MyCRM.dto.helper.ResponseModelDTO;
+import com.sifat.MyCRM.dto.input.CreateEntityCustomerDTO;
 import com.sifat.MyCRM.dto.input.CreateIndividualCustomerDTO;
 import com.sifat.MyCRM.dto.input.CreateSanctionConfigDataDTO;
 import com.sifat.MyCRM.dto.input.IndividualCustomerCompareInDTO;
 import com.sifat.MyCRM.dto.output.BDSanctionListDataOutDTO;
+import com.sifat.MyCRM.dto.output.EntityCustomerCompareResultOutDTO;
 import com.sifat.MyCRM.dto.output.IndividualCustomerCompareResultOutDTO;
 import com.sifat.MyCRM.dto.output.IndividualCustomerViewDTO;
 import com.sifat.MyCRM.service.CustomerService;
@@ -123,4 +125,35 @@ public class CustomerController {
         List<BDSanctionListDataOutDTO> result = sanctionDataParseService.extractPDFFinalData(file.getInputStream());
         return ResponseEntity.ok(result);
     }
+
+    @Tag(name = "CRM010 : entity customer creation")
+    @GetMapping("/create/entity-customer")
+    public ResponseEntity<ResponseModelDTO> createEntityCustomer (@RequestBody @Valid CreateEntityCustomerDTO createEntityCustomerDTO) throws Exception {
+        try {
+            String savedCustomerId = customerService.createEntityCustomer(createEntityCustomerDTO);
+            ResponseModelDTO responseModelDTO = ResponseModelDTO.builder().build();
+            responseModelDTO.setStatus(ResponseDataStatus.success.name());
+            responseModelDTO.setMessage("Customer created successfully");
+            responseModelDTO.setData(savedCustomerId);
+            return ResponseEntity.ok(responseModelDTO);
+        } catch (Exception e) {
+            throw  new Exception(e.getMessage());
+        }
+    }
+
+    @Tag(name = "CRM011 : saved entity customer aml verification")
+    @GetMapping("/verify/aml/{entity_customer_id}/saved/entity-customer")
+    public ResponseEntity<ResponseModelDTO> verifySavedEntityCustomerAML (@PathVariable("entity_customer_id") String entityCustomerId) throws Exception {
+        try {
+            List<EntityCustomerCompareResultOutDTO> res = customerService.verifySavedEntityCustomerAML(entityCustomerId);
+            ResponseModelDTO responseModelDTO = ResponseModelDTO.builder().build();
+            responseModelDTO.setStatus(ResponseDataStatus.success.name());
+            responseModelDTO.setMessage("Customer verification info found successfully");
+            responseModelDTO.setData(res);
+            return ResponseEntity.ok(responseModelDTO);
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
 }

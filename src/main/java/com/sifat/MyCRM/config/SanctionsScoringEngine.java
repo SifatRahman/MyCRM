@@ -10,7 +10,7 @@ public class SanctionsScoringEngine {
         this.configurationService = configurationService;
     }
 
-    public double calculate(
+    public double calculateIndividualScore(
             double nameScore,
             double dobScore,
             double docScore,
@@ -19,11 +19,20 @@ public class SanctionsScoringEngine {
             double pobScore) {
         var config = configurationService.getConfiguration();
 
-        return nameScore * config.getAfterScoreNameWeight() +
-                        dobScore * config.getAfterScoreDobWeight() +
-                        docScore * config.getAfterScoreDocWeight() +
-                        nationalityScore * config.getAfterScoreNationalityWeight() +
-                        addressScore * config.getAfterScoreAddressWeight() +
-                        pobScore * config.getAfterScorePobWeight();
+        return nameScore * config.getAfterScoreIndividualNameWeight() +
+                        dobScore * config.getAfterScoreIndividualDobWeight() +
+                        docScore * config.getAfterScoreIndividualDocWeight() +
+                        nationalityScore * config.getAfterScoreIndividualNationalityWeight() +
+                        addressScore * config.getAfterScoreIndividualAddressWeight() +
+                        pobScore * config.getAfterScoreIndividualPobWeight();
+    }
+
+    public double calculateEntityScore(
+            double nameScore,
+            double addressScore) {
+        var config = configurationService.getConfiguration();
+
+        return nameScore * config.getAfterScoreEntityNameWeight() +
+                addressScore * config.getAfterScoreEntityAddressWeight();
     }
 }

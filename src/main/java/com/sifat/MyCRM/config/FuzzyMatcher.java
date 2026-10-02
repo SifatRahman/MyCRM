@@ -1,5 +1,6 @@
 package com.sifat.MyCRM.config;
 
+import com.sifat.MyCRM.dto.input.CustomerAMLEntityPermanentAddressInDTO;
 import com.sifat.MyCRM.dto.input.CustomerAMLIndividualPermanentAddressInDTO;
 import com.sifat.MyCRM.entity.*;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
@@ -79,8 +80,40 @@ public class FuzzyMatcher {
         return maxSimilarity;
     }
 
-    public double getAddressSimilarity(CustomerAMLIndividualPermanentAddressInDTO customerAddress,
+    public double getIndividualAddressSimilarity(CustomerAMLIndividualPermanentAddressInDTO customerAddress,
                                        List<SanctionAddress> sanctionAddresses) {
+
+        if (customerAddress == null || sanctionAddresses == null || sanctionAddresses.isEmpty()) {
+            return 0.00;
+        }
+
+        StringBuilder customerAddressBuild = new StringBuilder();
+        customerAddressBuild
+                .append(customerAddress.getRoad_or_block())
+                .append(customerAddress.getVillage_or_area())
+                .append(customerAddress.getPost_code())
+                .append(customerAddress.getPolice_station())
+                .append(customerAddress.getUpazila())
+                .append(customerAddress.getDistrict())
+                .append(customerAddress.getDivision_or_state())
+                .append(customerAddress.getCountry());
+
+        double maxSimilarity = 0.00;
+        for (SanctionAddress e : sanctionAddresses) {
+            String sanctionAddressBuilder = e.getStreet() +
+                    e.getZip_code() +
+                    e.getState_province() +
+                    e.getCity() +
+                    e.getCountry();
+
+            double currentSimilarity = getJaroWinklerSimilarity(customerAddressBuild.toString(), sanctionAddressBuilder);
+            maxSimilarity = Math.max(maxSimilarity, currentSimilarity);
+        }
+        return maxSimilarity;
+    }
+
+    public double getEntityAddressSimilarity(CustomerAMLEntityPermanentAddressInDTO customerAddress,
+                                             List<SanctionAddress> sanctionAddresses) {
 
         if (customerAddress == null || sanctionAddresses == null || sanctionAddresses.isEmpty()) {
             return 0.00;

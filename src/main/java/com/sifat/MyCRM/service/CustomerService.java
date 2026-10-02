@@ -1,21 +1,19 @@
 package com.sifat.MyCRM.service;
 
 import com.sifat.MyCRM.dto.input.*;
+import com.sifat.MyCRM.dto.output.EntityCustomerCompareResultOutDTO;
 import com.sifat.MyCRM.dto.output.IndividualCustomerCompareResultOutDTO;
 import com.sifat.MyCRM.dto.output.IndividualCustomerPermanentAddressViewDTO;
 import com.sifat.MyCRM.dto.output.IndividualCustomerViewDTO;
-import com.sifat.MyCRM.entity.CustomerSanctionIndividualComparisonHistory;
-import com.sifat.MyCRM.entity.IndividualCustomer;
-import com.sifat.MyCRM.entity.IndividualCustomerPermanentAddress;
+import com.sifat.MyCRM.entity.*;
 import com.sifat.MyCRM.exception.ResourceNotFoundException;
-import com.sifat.MyCRM.repository.CustomerSanctionIndividualComparisonHistoryRepository;
-import com.sifat.MyCRM.repository.IndividualCustomerPermanentAddressRepository;
-import com.sifat.MyCRM.repository.IndividualCustomerRepository;
+import com.sifat.MyCRM.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.swing.text.html.parser.Entity;
 import java.nio.file.ReadOnlyFileSystemException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -29,7 +27,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CustomerService extends BaseService {
     private final IndividualCustomerRepository individualCustomerRepository;
+    private final EntityCustomerRepository entityCustomerRepository;
+    private final EntityCustomerPermanentAddressRepository entityCustomerPermanentAddressRepository;
     private final IndividualCustomerPermanentAddressRepository individualCustomerPermanentAddressRepository;
+    private final CustomerSanctionEntityComparisonHistoryRepository entityComparisonHistoryRepository;
     private final CustomerSanctionIndividualComparisonHistoryRepository individualComparisonHistoryRepository;
     private final SanctionComparisonService sanctionComparisonService;
 
@@ -285,4 +286,118 @@ public class CustomerService extends BaseService {
     }
 
 
+
+    @Transactional(rollbackFor = Exception.class)
+    public String createEntityCustomer(CreateEntityCustomerDTO inDTO) throws Exception {
+        try {
+            var existsByName = entityCustomerRepository.findByFullName(inDTO.getFull_name()).orElse(null);
+            if (existsByName != null) {
+                throw new ResourceNotFoundException("Customer with same name already exists!");
+            }
+
+            EntityCustomer customer = new EntityCustomer();
+            customer.setId(getUUID());
+            customer.setFullName(inDTO.getFull_name());
+            customer.setAccountOfficer(inDTO.getAccount_officer());
+            customer.setSector(inDTO.getSector());
+            customer.setTarget(inDTO.getTarget());
+            customer.setCustomerStatus(inDTO.getCustomer_status());
+            customer.setIndustry(inDTO.getIndustry());
+            customer.setLanguage(inDTO.getLanguage());
+            customer.setResidence(inDTO.getResidence());
+            customer.setCbSectorCode(inDTO.getCb_sector_code());
+            customer.setReturnSubmissionDate(inDTO.getReturn_submission_date());
+            customer.setSmsAlertService(inDTO.getSms_alert_service());
+            customer.setIsSanctionAMLVerified(false);
+            customer.setTimestamp(LocalDateTime.now());
+
+
+            //Saving permanent address
+            CreateEntityCustomerPermanentAddressDTO inCPA = inDTO.getEntityCustomerPermanentAddressDTO();
+            EntityCustomerPermanentAddress cpa = new EntityCustomerPermanentAddress();
+            cpa.setId(getUUID());
+            cpa.setEntityCustomer(customer);
+            cpa.setCountry(inCPA.getCountry());
+            cpa.setDivision_or_state(inCPA.getDivision_or_state());
+            cpa.setDistrict(inCPA.getDistrict());
+            cpa.setUpazila(inCPA.getUpazila());
+            cpa.setPolice_station(inCPA.getPolice_station());
+            cpa.setPost_code(inCPA.getPost_code());
+            cpa.setVillage_or_area(inCPA.getVillage_or_area());
+            cpa.setRoad_or_block(inCPA.getRoad_or_block());
+            cpa.setHouse_or_flat_no(houseOrFlatsToString(inCPA.getHouse_or_flat_no()));
+            cpa.setMobile_no(inCPA.getMobile_no());
+            cpa.setPhone_number_off_1(inCPA.getPhone_number_off_1());
+            cpa.setEmail_address(inCPA.getEmail_address());
+
+            EntityCustomer savedIndividualCustomer = entityCustomerRepository.save(customer);
+            entityCustomerPermanentAddressRepository.save(cpa);
+            return savedIndividualCustomer.getId();
+
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
+
+    public List<EntityCustomerCompareResultOutDTO> verifySavedEntityCustomerAML(String entityCustomerId) {
+
+        try {
+            if(isBlankStringOrNull(entityCustomerId)){
+                throw new ResourceNotFoundException("Entity customer id can't be null or blank!");
+            }
+            EntityCustomer entityCustomer = entityCustomerRepository.findById(entityCustomerId).orElseThrow(() ->
+                    new ResourceNotFoundException("Customer not found!"));
+            EntityCustomerPermanentAddress customerPermanentAddress = entityCustomerPermanentAddressRepository.findByEntityCustomer_Id(entityCustomerId).orElseThrow(() ->
+                    new ResourceNotFoundException("Customer permanent address not found!"));
+
+            EntityCustomerCompareInDTO entityCustomerCompareInDTO = getEntityCustomerCompareInDTO(entityCustomer, customerPermanentAddress);
+            List<EntityCustomerCompareResultOutDTO> matchingResult = sanctionComparisonService.compareEntityData(entityCustomerCompareInDTO);
+
+            if(!matchingResult.isEmpty()) {
+                EntityCustomerCompareResultOutDTO topMatchingResult = matchingResult.getFirst();
+
+                //update the table
+                entityCustomer.setIsSanctionAMLVerified(true);
+                entityCustomerRepository.save(entityCustomer);
+                //insert data into history table
+
+                //history keeping of top score
+                CustomerSanctionEntityComparisonHistory his = new CustomerSanctionEntityComparisonHistory();
+                his.setId(getUUID());
+                his.setEntityCustomer(entityCustomer);
+                his.setNameScore(topMatchingResult.getName_score());
+                his.setAddressScore(topMatchingResult.getAddress_score());
+                his.setTotalScore(topMatchingResult.getOverall_score());
+                his.setMatchStatus(topMatchingResult.getSanction_match_status());
+                his.setTimestamp(LocalDateTime.now());
+                entityComparisonHistoryRepository.save(his);
+            }
+            return matchingResult;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    public EntityCustomerCompareInDTO getEntityCustomerCompareInDTO(EntityCustomer ic, EntityCustomerPermanentAddress pa) {
+        EntityCustomerCompareInDTO entityCustomerCompareInDTO = new EntityCustomerCompareInDTO();
+
+        EntityCustomerBasicDetailDTO basicDetailDTO = EntityCustomerBasicDetailDTO.builder()
+                .full_name(ic.getFullName())
+                .account_officer(ic.getAccountOfficer()).sector(ic.getSector()).target(ic.getTarget())
+                .customer_status(ic.getCustomerStatus()).industry(ic.getIndustry()).language(ic.getLanguage())
+                .residence(ic.getResidence())
+                .cb_sector_code(ic.getCbSectorCode()).return_submission_date(ic.getReturnSubmissionDate()).sms_alert_service(ic.getSmsAlertService())
+                .build();
+
+        CustomerAMLEntityPermanentAddressInDTO address = CustomerAMLEntityPermanentAddressInDTO.builder()
+                .country(pa.getCountry()).division_or_state(pa.getDivision_or_state()).district(pa.getDistrict())
+                .upazila(pa.getUpazila()).police_station(pa.getPolice_station()).post_code(pa.getPost_code())
+                .village_or_area(pa.getVillage_or_area()).road_or_block(pa.getRoad_or_block()).house_or_flat_no(stringToHouseOrFlats(pa.getHouse_or_flat_no()))
+                .mobile_no(pa.getMobile_no()).phone_number_off_1(pa.getPhone_number_off_1()).email_address(pa.getEmail_address()).build();
+
+        entityCustomerCompareInDTO.setBasic_details(basicDetailDTO);
+        entityCustomerCompareInDTO.setPermanent_address(address);
+        return entityCustomerCompareInDTO;
+    }
 }

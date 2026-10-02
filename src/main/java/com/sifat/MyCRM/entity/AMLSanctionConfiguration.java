@@ -11,15 +11,6 @@ import org.hibernate.annotations.Check;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Check(constraints = """
-        after_score_name_weight
-        + after_score_dob_weight
-        + after_score_doc_weight
-        + after_score_nationality_weight
-        + after_score_address_weight
-        +after_score_pob_weight = 1.00
-    """
-)
 public class AMLSanctionConfiguration {
     @Id
     @Column(name = "id", nullable = false, length = 128)
@@ -34,23 +25,29 @@ public class AMLSanctionConfiguration {
     @Column(name = "only_year_matched_with_approximate_year_dob_score",nullable = false)
     private double onlyYearMatchedWithApproximateYearDobScore;
 
-    @Column(name = "after_score_name_weight",nullable = false)
-    private double afterScoreNameWeight;
+    @Column(name = "after_score_individual_name_weight",nullable = false)
+    private double afterScoreIndividualNameWeight;
 
-    @Column(name = "after_score_dob_weight",nullable = false)
-    private double afterScoreDobWeight;
+    @Column(name = "after_score_individual_dob_weight",nullable = false)
+    private double afterScoreIndividualDobWeight;
 
-    @Column(name = "after_score_doc_weight",nullable = false)
-    private double afterScoreDocWeight;
+    @Column(name = "after_score_individual_doc_weight",nullable = false)
+    private double afterScoreIndividualDocWeight;
 
-    @Column(name = "after_score_nationality_weight",nullable = false)
-    private double afterScoreNationalityWeight;
+    @Column(name = "after_score_individual_nationality_weight",nullable = false)
+    private double afterScoreIndividualNationalityWeight;
 
-    @Column(name = "after_score_address_weight",nullable = false)
-    private double afterScoreAddressWeight;
+    @Column(name = "after_score_individual_address_weight",nullable = false)
+    private double afterScoreIndividualAddressWeight;
 
-    @Column(name = "after_score_pob_weight",nullable = false)
-    private double afterScorePobWeight;
+    @Column(name = "after_score_individual_pob_weight",nullable = false)
+    private double afterScoreIndividualPobWeight;
+
+    @Column(name = "after_score_entity_name_weight",nullable = false)
+    private double afterScoreEntityNameWeight;
+
+    @Column(name = "after_score_entity_address_weight",nullable = false)
+    private double afterScoreEntityAddressWeight;
 
     @Column(name = "high_risk_start_score",nullable = false)
     private double highRiskStartScore;

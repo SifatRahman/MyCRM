@@ -1,0 +1,25 @@
+package com.sifat.MyCRM.dto.input;
+
+import lombok.*;
+
+import java.util.List;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class CustomerAMLEntityPermanentAddressInDTO {
+    private String country;
+    private String division_or_state;
+    private String district;
+    private String upazila;
+    private String police_station;
+    private String post_code;
+    private String village_or_area;
+    private String road_or_block;
+    private List<String> house_or_flat_no;
+    private String mobile_no;
+    private String phone_number_off_1;
+    private String email_address;
+}
