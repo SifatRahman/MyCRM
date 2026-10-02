@@ -9,6 +9,7 @@ import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualDOBDTO;
 import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualDataDTO;
 import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualDocDTO;
 import com.sifat.MyCRM.dto.external.individual.USSanctionIndividualPOBDataDTO;
+import com.sifat.MyCRM.dto.output.BDSanctionListDataOutDTO;
 import com.sifat.MyCRM.entity.*;
 import com.sifat.MyCRM.exception.ResourceNotFoundException;
 import com.sifat.MyCRM.repository.SanctionEntityRepository;
@@ -21,6 +22,8 @@ import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.sifat.MyCRM.utility.OrganizationEntitySource.BFIU;
 import static com.sifat.MyCRM.utility.OrganizationEntitySource.UN;
 
 @Service
@@ -32,7 +35,7 @@ public class SanctionService extends BaseService {
 
 
     @Transactional(rollbackFor = Exception.class)
-    public USSanctionListDBOutDTO savedSanctionData(InputStream inputStream) throws Exception {
+    public USSanctionListDBOutDTO savedSanctionData(InputStream unSanctionXML,InputStream bdSanctionPDF) throws Exception {
 
         try {
             boolean hasAnyData = sanctionIndividualRepository.hasAnyData();
@@ -40,12 +43,12 @@ public class SanctionService extends BaseService {
                 throw new ResourceNotFoundException("UN-Sanctioned data already exists in the database!");
             }
 
-            USSanctionListDataOutDTO usSanctionListDataOutDTO = sanctionDataParseService.parseXmlFile(inputStream);
+            USSanctionListDataOutDTO usSanctionListDataOutDTO = sanctionDataParseService.parseXmlFile(unSanctionXML);
             List<USSanctionIndividualDataDTO> individualXmlDataDTOs = usSanctionListDataOutDTO.getIndividuals();
             List<USSanctionEntityDataDTO> entityXmlDataDTOs = usSanctionListDataOutDTO.getEntities();
 
             //individuals
-            List<SanctionIndividual> savingIndividuals = individualXmlDataDTOs.stream()
+            List<SanctionIndividual> savingUNIndividuals = individualXmlDataDTOs.stream()
                     .map(individualXmlDataDTO -> {
                         SanctionIndividual sanctionIndividual = new SanctionIndividual();
                         sanctionIndividual.setId(getUUID());
@@ -291,7 +294,7 @@ public class SanctionService extends BaseService {
 
 
             //entities
-            List<SanctionEntity> savingEntities = entityXmlDataDTOs.stream()
+            List<SanctionEntity> savingUNEntities = entityXmlDataDTOs.stream()
                     .map(entityXmlDataDTO -> {
                         SanctionEntity sanctionentity = new SanctionEntity();
                         sanctionentity.setId(getUUID());
@@ -407,16 +410,51 @@ public class SanctionService extends BaseService {
                         return sanctionentity;
                     }).toList();
 
+            List<SanctionEntity> bdSanctionEntities = getBDSanctionEntities(bdSanctionPDF);
+            List<SanctionEntity> savingAllEntities = new ArrayList<>(savingUNEntities);
+            savingAllEntities.addAll(bdSanctionEntities);
+
             //saving to DB
-            sanctionIndividualRepository.saveAll(savingIndividuals);
-            sanctionEntityRepository.saveAll(savingEntities);
+            sanctionIndividualRepository.saveAll(savingUNIndividuals);
+            sanctionEntityRepository.saveAll(savingAllEntities);
 
             USSanctionListDBOutDTO usSanctionListDBOutDTO = new USSanctionListDBOutDTO();
-            usSanctionListDBOutDTO.setIndividuals(savingIndividuals);
-            usSanctionListDBOutDTO.setEntities(savingEntities);
+            usSanctionListDBOutDTO.setIndividuals(savingUNIndividuals);
+            usSanctionListDBOutDTO.setEntities(savingAllEntities);
             return usSanctionListDBOutDTO;
         }catch (Exception e){
             throw new Exception(e.getMessage());
         }
+    }
+
+    private List<SanctionEntity> getBDSanctionEntities(InputStream bdSanctionPDF) {
+        List<BDSanctionListDataOutDTO> bdSanctionListDataOutDTOS = sanctionDataParseService.extractPDFFinalData(bdSanctionPDF);
+        if(bdSanctionListDataOutDTOS.isEmpty()){
+            return List.of();
+        }
+
+        var res =  bdSanctionListDataOutDTOS.stream().map(e -> {
+            SanctionEntity se = SanctionEntity.builder()
+                    .id(getUUID())
+                    .firstName(e.getNameOfEntity())
+                    .createdAt(LocalDateTime.now())
+                    .source(BFIU.name()).build();
+
+            ArrayList<SanctionAddress> sanctionAddresses = new ArrayList<>();
+            SanctionAddress sa;
+            if(!e.getAddressOfEntity().contains("No Specific Address")){
+                sa = SanctionAddress.builder()
+                        .id(getUUID())
+                        .entity(se)
+                        .customerType(CustomerType.ENTITY.name())
+                        .street(e.getAddressOfEntity())
+                        .source(BFIU.name())
+                        .build();
+                sanctionAddresses.add(sa);
+            }
+            se.setEntityAddress(sanctionAddresses);
+            return se;
+        }).toList();
+        return res;
     }
 }

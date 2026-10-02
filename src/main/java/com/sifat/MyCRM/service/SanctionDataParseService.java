@@ -336,7 +336,7 @@ public class SanctionDataParseService extends BaseService {
 
         try {
             List<BDSanctionListDataOutDTO> dataOutDTOS = extractPDFText(inputStream);
-            dataOutDTOS = dataOutDTOS.subList(2, dataOutDTOS.size() - 1);
+            dataOutDTOS = dataOutDTOS.subList(2, dataOutDTOS.size());
 
             for (int i = 0; i < dataOutDTOS.size(); i++) {
                 var outerDTO = dataOutDTOS.get(i);

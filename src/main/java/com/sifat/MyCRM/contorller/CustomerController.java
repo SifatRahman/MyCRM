@@ -44,19 +44,28 @@ public class CustomerController {
         return ResponseEntity.ok(result);
     }
 
-    @Tag(name = "CRM003 : save xml to DB") //done
+    @Tag(name = "CRM003 : save xml to DB")
     @PostMapping("/save/sanction-data")
-    public ResponseEntity<ResponseModelDTO> savedSanctionData (@RequestParam("file") MultipartFile file) throws Exception {
+    public ResponseEntity<ResponseModelDTO> savedSanctionData(
+            @RequestParam("UNSanctionXML") MultipartFile unSanctionXML,
+            @RequestParam("BDSanctionPDF") MultipartFile bdSanctionPDF
+    ) throws Exception {
         try {
-            USSanctionListDBOutDTO result = sanctionService.savedSanctionData(file.getInputStream());
+            USSanctionListDBOutDTO result =
+                    sanctionService.savedSanctionData(
+                            unSanctionXML.getInputStream(),
+                            bdSanctionPDF.getInputStream()
+                    );
+
             ResponseModelDTO responseModelDTO = ResponseModelDTO.builder()
                     .status(ResponseDataStatus.success.name())
-                    .message("All UN-Sanctioned XML data saved successfully")
+                    .message("All sanction data saved successfully")
                     .data(result)
                     .build();
+
             return ResponseEntity.ok(responseModelDTO);
         } catch (Exception e) {
-            throw  new Exception(e.getMessage());
+            throw new Exception(e.getMessage());
         }
     }
 
