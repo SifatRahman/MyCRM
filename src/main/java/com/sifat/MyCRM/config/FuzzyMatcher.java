@@ -229,7 +229,7 @@ public class FuzzyMatcher {
         }
     }
     public static String stringToEmptyStringIfInvalid(String value) {
-        return value == null || value.isBlank() ? "" : value;
+        return (value == null || value.isBlank() || value.equalsIgnoreCase("null") )? "" : value;
     }
 
     public static SanctionIndividualDateOfBirth stringToEmptyStringIfDOBNull(SanctionIndividualDateOfBirth dob) {

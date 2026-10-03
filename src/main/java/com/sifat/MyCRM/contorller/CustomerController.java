@@ -31,10 +31,11 @@ public class CustomerController {
     private final SanctionService sanctionService;
     private final SanctionComparisonService sanctionComparisonService;
 
-    @Tag(name = "CRM001 : see service health")    //done
-    @GetMapping("/test")
-    public String testApi (){
-        return customerService.Hello();
+    @Tag(name = "CRM001 : Test Jaro winkler")    //done
+    @GetMapping("/test/{str1}/{str2}")
+    public Double testApi (@PathVariable("str1") String str1,
+                           @PathVariable("str2") String str2){
+        return sanctionComparisonService.findJaroSimilarity(str1,str2);
     }
 
     @Tag(name = "CRM002 : upload un-xml file to view")   //done

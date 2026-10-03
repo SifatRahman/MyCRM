@@ -35,6 +35,9 @@ public class SanctionComparisonService extends BaseService {
     private final SanctionIndividualRepository sanctionIndividualRepository;
     private final SanctionEntityRepository sanctionEntityRepository;
 
+    public Double findJaroSimilarity(String str1, String str2) {
+        return fuzzyMatcher.getJaroWinklerSimilarity(str1,str2);
+    }
 
     public List<IndividualCustomerCompareResultOutDTO> compareIndividualData(IndividualCustomerCompareInDTO inDTO) throws Exception {
         try {
