@@ -235,7 +235,7 @@ public class SanctionDataParseService extends BaseService {
     private List<USSanctionAliasDTO> getAliases(Element individual, String customerType) {
         List<USSanctionAliasDTO> aliases = new ArrayList<>();
 
-        NodeList nodes = individual.getElementsByTagName(String.format(customerType + "_ALIAS"));
+        NodeList nodes = individual.getElementsByTagName(customerType + "_ALIAS");
 
         for (int i = 0; i < nodes.getLength(); i++) {
             Element alias = (Element) nodes.item(i);
@@ -250,7 +250,7 @@ public class SanctionDataParseService extends BaseService {
     private List<USSanctionAddressDataDTO> getAddress(Element individual, String customerType) {
         List<USSanctionAddressDataDTO> aliases = new ArrayList<>();
 
-        NodeList nodes = individual.getElementsByTagName(String.format(customerType + "_ADDRESS"));
+        NodeList nodes = individual.getElementsByTagName(customerType + "_ADDRESS");
 
         for (int i = 0; i < nodes.getLength(); i++) {
             Element alias = (Element) nodes.item(i);

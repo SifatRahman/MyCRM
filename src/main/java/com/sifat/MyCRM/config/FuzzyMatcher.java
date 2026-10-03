@@ -179,8 +179,8 @@ public class FuzzyMatcher {
                 return 0.00;
             }
             double maxSimilarity = 0.00;
-            for (SanctionIndividualDateOfBirth e : sanctionDobs) {
-                e=stringToEmptyStringIfDOBNull(e);
+            for (SanctionIndividualDateOfBirth e1 : sanctionDobs) {
+                SanctionIndividualDateOfBirth e = stringToEmptyStringIfDOBNull(e1);
 
                 double currentSimilarity = 0.00;
                 switch (e.getType_of_date()) {
