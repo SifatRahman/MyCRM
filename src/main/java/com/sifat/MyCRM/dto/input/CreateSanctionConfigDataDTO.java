@@ -36,37 +36,37 @@ public class CreateSanctionConfigDataDTO {
     @NotNull
     @DecimalMin("0.0")
     @DecimalMax("1.0")
-    private Double after_score_name_weight;
+    private Double after_score_individual_name_weight;
 
 
     @NotNull
     @DecimalMin("0.0")
     @DecimalMax("1.0")
-    private Double after_score_dob_weight;
+    private Double after_score_individual_dob_weight;
 
 
     @NotNull
     @DecimalMin("0.0")
     @DecimalMax("1.0")
-    private Double after_score_doc_weight;
+    private Double after_score_individual_doc_weight;
 
 
     @NotNull
     @DecimalMin("0.0")
     @DecimalMax("1.0")
-    private Double after_score_nationality_weight;
+    private Double after_score_individual_nationality_weight;
 
 
     @NotNull
     @DecimalMin("0.0")
     @DecimalMax("1.0")
-    private Double after_score_address_weight;
+    private Double after_score_individual_address_weight;
 
 
     @NotNull
     @DecimalMin("0.0")
     @DecimalMax("1.0")
-    private Double after_score_pob_weight;
+    private Double after_score_individual_pob_weight;
 
     @NotNull
     @DecimalMin("0.0")
@@ -83,16 +83,32 @@ public class CreateSanctionConfigDataDTO {
     @NotNull
     @DecimalMin("0.0")
     @DecimalMax("1.0")
-    private Double high_risk_start_score;
+    private Double individual_high_risk_start_score;
 
 
     @NotNull
     @DecimalMin("0.0")
     @DecimalMax("1.0")
-    private Double potential_match_start_score;
+    private Double individual_potential_match_start_score;
 
     @NotNull
     @DecimalMin("0.0")
     @DecimalMax("1.0")
-    private Double sanction_clear_till_score;
+    private Double individual_sanction_clear_till_score;
+
+    @NotNull
+    @DecimalMin("0.0")
+    @DecimalMax("1.0")
+    private Double entity_high_risk_start_score;
+
+
+    @NotNull
+    @DecimalMin("0.0")
+    @DecimalMax("1.0")
+    private Double entity_potential_match_start_score;
+
+    @NotNull
+    @DecimalMin("0.0")
+    @DecimalMax("1.0")
+    private Double entity_sanction_clear_till_score;
 }

@@ -42,7 +42,7 @@ public class SanctionComparisonService extends BaseService {
             CustomerAMLIndividualPermanentAddressInDTO customerAddressDTO = inDTO.getPermanent_address();
 
             List<SanctionIndividual> sanctionedIndividuals = sanctionIndividualRepository.findAll();
-            if(sanctionedIndividuals.isEmpty()){
+            if (sanctionedIndividuals.isEmpty()) {
                 throw new ResourceNotFoundException("No sanctioned data found!");
             }
 
@@ -58,41 +58,13 @@ public class SanctionComparisonService extends BaseService {
                 double addressScore = fuzzyMatcher.getIndividualAddressSimilarity(customerAddressDTO, sanctionIndividual.getIndividualAddress());
                 double pobScore = fuzzyMatcher.getPlaceOfBirthSimilarity(customerAddressDTO, sanctionIndividual.getIndividual_place_of_birth());
 
-                double overallScore = sanctionsScoringEngine.calculateIndividualScore(
-                        nameScore,
-                        dobScore,
-                        docScore,
-                        nationalityScore,
-                        addressScore,
-                        pobScore
-                );
-                String overallScoreString = String.valueOf(BigDecimal.valueOf(overallScore)
-                        .setScale(2, RoundingMode.HALF_UP)
-                        .multiply(BigDecimal.valueOf(100)));
+                double overallScore = sanctionsScoringEngine.calculateIndividualScore(nameScore, dobScore, docScore, nationalityScore, addressScore, pobScore);
+                String overallScoreString = String.valueOf(BigDecimal.valueOf(overallScore).setScale(2, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)));
 
-                results.add(new IndividualCustomerCompareResultOutDTO(
-                                sanctionIndividual.getId(),
-                                getIndividualFullName(sanctionIndividual),
-                                BigDecimal.valueOf(nameScore).setScale(2, RoundingMode.HALF_UP),
-                                BigDecimal.valueOf(dobScore).setScale(2, RoundingMode.HALF_UP),
-                                BigDecimal.valueOf(docScore).setScale(2, RoundingMode.HALF_UP),
-                                BigDecimal.valueOf(addressScore).setScale(2, RoundingMode.HALF_UP),
-                                BigDecimal.valueOf(pobScore).setScale(2, RoundingMode.HALF_UP),
-                                BigDecimal.valueOf(nationalityScore).setScale(2, RoundingMode.HALF_UP),
-                                BigDecimal.valueOf(overallScore).setScale(2, RoundingMode.HALF_UP),
-                                overallScoreString + "%",
-                                determineIndividualStatus(overallScore)
-                        )
-                );
+                results.add(new IndividualCustomerCompareResultOutDTO(sanctionIndividual.getId(), getIndividualFullName(sanctionIndividual), BigDecimal.valueOf(nameScore).setScale(2, RoundingMode.HALF_UP), BigDecimal.valueOf(dobScore).setScale(2, RoundingMode.HALF_UP), BigDecimal.valueOf(docScore).setScale(2, RoundingMode.HALF_UP), BigDecimal.valueOf(addressScore).setScale(2, RoundingMode.HALF_UP), BigDecimal.valueOf(pobScore).setScale(2, RoundingMode.HALF_UP), BigDecimal.valueOf(nationalityScore).setScale(2, RoundingMode.HALF_UP), BigDecimal.valueOf(overallScore).setScale(2, RoundingMode.HALF_UP), overallScoreString + "%", determineIndividualStatus(overallScore)));
             }
 
-            List<IndividualCustomerCompareResultOutDTO> reversedList = results.stream()
-                    .sorted(
-                            Comparator.comparing(
-                                    IndividualCustomerCompareResultOutDTO::getOverall_score
-                            ).reversed()
-                    )
-                    .toList();
+            List<IndividualCustomerCompareResultOutDTO> reversedList = results.stream().sorted(Comparator.comparing(IndividualCustomerCompareResultOutDTO::getOverall_score).reversed()).toList();
             return reversedList.stream().limit(5).toList();
         } catch (Exception e) {
             throw new Exception(e.getMessage());
@@ -114,38 +86,47 @@ public class SanctionComparisonService extends BaseService {
     }
 
     private String getIndividualFullName(SanctionIndividual individual) {
-        return individual.getFirstName() + " " + individual.getSecondName() + " "
-                + individual.getThirdName() + " " + individual.getFourthName();
+        return individual.getFirstName() + " " + individual.getSecondName() + " " + individual.getThirdName() + " " + individual.getFourthName();
     }
 
     public void saveSanctionConfigData(@Valid CreateSanctionConfigDataDTO inDTO) {
-        try{
+        try {
 
-        AMLSanctionConfiguration asc = amlSanctionConfigurationRepository.findFirstBy().orElseThrow(
-                () -> new ResourceNotFoundException("AML sanction configuration not found!")
-        );
-        var sumAfter = inDTO.getAfter_score_name_weight()+inDTO.getAfter_score_dob_weight()
-                +inDTO.getAfter_score_doc_weight()+inDTO.getAfter_score_nationality_weight()
-                +inDTO.getAfter_score_address_weight()+inDTO.getAfter_score_pob_weight();
-        if(sumAfter!=1.00){
-            throw new ResourceNotFoundException("Sum of after score weight must be 1.00!");
-        }
+            AMLSanctionConfiguration asc = amlSanctionConfigurationRepository.findFirstBy().orElseThrow(() -> new ResourceNotFoundException("AML sanction configuration not found!"));
+            var individualSumAfter = inDTO.getAfter_score_individual_name_weight() + inDTO.getAfter_score_individual_dob_weight() + inDTO.getAfter_score_individual_doc_weight() + inDTO.getAfter_score_individual_nationality_weight() + inDTO.getAfter_score_individual_address_weight() + inDTO.getAfter_score_individual_pob_weight();
+            if (individualSumAfter != 1.00) {
+                throw new ResourceNotFoundException("Individual sum of after score weight must be 1.00!");
+            }
 
-        asc.setOnlyExactYearMatchDobScore(inDTO.getOnly_exact_year_matched_dob_score());
-        asc.setYearInBetweenGivenTwoYearMatchDobScore(inDTO.getYear_in_between_given_two_year_matched_dob_score());
-        asc.setOnlyYearMatchedWithApproximateYearDobScore(inDTO.getOnly_year_matched_with_approximate_year_dob_score());
-        asc.setAfterScoreIndividualNameWeight(inDTO.getAfter_score_name_weight());
-        asc.setAfterScoreIndividualDobWeight(inDTO.getAfter_score_dob_weight());
-        asc.setAfterScoreIndividualDocWeight(inDTO.getAfter_score_doc_weight());
-        asc.setAfterScoreIndividualNationalityWeight(inDTO.getAfter_score_nationality_weight());
-        asc.setAfterScoreIndividualAddressWeight(inDTO.getAfter_score_address_weight());
-        asc.setAfterScoreIndividualPobWeight(inDTO.getAfter_score_pob_weight());
-        asc.setIndividualHighRiskStartScore(inDTO.getHigh_risk_start_score());
-        asc.setIndividualPotentialMatchStartScore(inDTO.getPotential_match_start_score());
-        asc.setIndividualSanctionClearTillScore(inDTO.getSanction_clear_till_score());
+            var entitySumAfter = inDTO.getAfter_score_entity_name_weight()
+                    + inDTO.getAfter_score_entity_address_weight();
+            if (entitySumAfter != 1.00) {
+                throw new ResourceNotFoundException("Entity sum of after score weight must be 1.00!");
+            }
 
-        amlSanctionConfigurationRepository.save(asc);
-        configurationService.reload();
+            asc.setOnlyExactYearMatchDobScore(inDTO.getOnly_exact_year_matched_dob_score());
+            asc.setYearInBetweenGivenTwoYearMatchDobScore(inDTO.getYear_in_between_given_two_year_matched_dob_score());
+            asc.setOnlyYearMatchedWithApproximateYearDobScore(inDTO.getOnly_year_matched_with_approximate_year_dob_score());
+            asc.setAfterScoreIndividualNameWeight(inDTO.getAfter_score_individual_name_weight());
+            asc.setAfterScoreIndividualDobWeight(inDTO.getAfter_score_individual_dob_weight());
+            asc.setAfterScoreIndividualDocWeight(inDTO.getAfter_score_individual_doc_weight());
+            asc.setAfterScoreIndividualNationalityWeight(inDTO.getAfter_score_individual_nationality_weight());
+            asc.setAfterScoreIndividualAddressWeight(inDTO.getAfter_score_individual_address_weight());
+            asc.setAfterScoreIndividualPobWeight(inDTO.getAfter_score_individual_pob_weight());
+            asc.setIndividualHighRiskStartScore(inDTO.getIndividual_high_risk_start_score());
+            asc.setIndividualPotentialMatchStartScore(inDTO.getIndividual_potential_match_start_score());
+            asc.setIndividualSanctionClearTillScore(inDTO.getIndividual_sanction_clear_till_score());
+
+            asc.setAfterScoreEntityNameWeight(inDTO.getAfter_score_entity_name_weight());
+            asc.setAfterScoreEntityAddressWeight(inDTO.getAfter_score_entity_address_weight());
+
+            asc.setEntityHighRiskStartScore(inDTO.getEntity_high_risk_start_score());
+            asc.setEntityPotentialMatchStartScore(inDTO.getEntity_potential_match_start_score());
+            asc.setEntitySanctionClearTillScore(inDTO.getEntity_sanction_clear_till_score());
+
+
+            amlSanctionConfigurationRepository.save(asc);
+            configurationService.reload();
 
         } catch (Exception e) {
             throw new ResourceNotFoundException(e.getMessage());
@@ -158,7 +139,7 @@ public class SanctionComparisonService extends BaseService {
             CustomerAMLEntityPermanentAddressInDTO customerAddressDTO = inDTO.getPermanent_address();
 
             List<SanctionEntity> sanctionEntities = sanctionEntityRepository.findAll();
-            if(sanctionEntities.isEmpty()){
+            if (sanctionEntities.isEmpty()) {
                 throw new ResourceNotFoundException("No sanctioned data found!");
             }
             List<EntityCustomerCompareResultOutDTO> results = new ArrayList<>();
@@ -167,33 +148,13 @@ public class SanctionComparisonService extends BaseService {
 
                 double nameScore = fuzzyMatcher.getJaroWinklerSimilarity(customerDetailDTO.getFull_name(), sanctionEntity.getFirstName());
                 double addressScore = fuzzyMatcher.getEntityAddressSimilarity(customerAddressDTO, sanctionEntity.getEntityAddress());
-                double overallScore = sanctionsScoringEngine.calculateEntityScore(
-                        nameScore,
-                        addressScore
-                );
-                String overallScoreString = String.valueOf(BigDecimal.valueOf(overallScore)
-                        .setScale(2, RoundingMode.HALF_UP)
-                        .multiply(BigDecimal.valueOf(100)));
+                double overallScore = sanctionsScoringEngine.calculateEntityScore(nameScore, addressScore);
+                String overallScoreString = String.valueOf(BigDecimal.valueOf(overallScore).setScale(2, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)));
 
-                results.add(new EntityCustomerCompareResultOutDTO(
-                        sanctionEntity.getId(),
-                                sanctionEntity.getFirstName(),
-                                BigDecimal.valueOf(nameScore).setScale(2, RoundingMode.HALF_UP),
-                                BigDecimal.valueOf(addressScore).setScale(2, RoundingMode.HALF_UP),
-                                BigDecimal.valueOf(overallScore).setScale(2, RoundingMode.HALF_UP),
-                                overallScoreString + "%",
-                        determineEntityStatus(overallScore)
-                        )
-                );
+                results.add(new EntityCustomerCompareResultOutDTO(sanctionEntity.getId(), sanctionEntity.getFirstName(), BigDecimal.valueOf(nameScore).setScale(2, RoundingMode.HALF_UP), BigDecimal.valueOf(addressScore).setScale(2, RoundingMode.HALF_UP), BigDecimal.valueOf(overallScore).setScale(2, RoundingMode.HALF_UP), overallScoreString + "%", determineEntityStatus(overallScore)));
             }
 
-            List<EntityCustomerCompareResultOutDTO> reversedList = results.stream()
-                    .sorted(
-                            Comparator.comparing(
-                                    EntityCustomerCompareResultOutDTO::getOverall_score
-                            ).reversed()
-                    )
-                    .toList();
+            List<EntityCustomerCompareResultOutDTO> reversedList = results.stream().sorted(Comparator.comparing(EntityCustomerCompareResultOutDTO::getOverall_score).reversed()).toList();
             return reversedList.stream().limit(5).toList();
         } catch (Exception e) {
             throw new Exception(e.getMessage());
