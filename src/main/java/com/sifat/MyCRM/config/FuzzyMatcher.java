@@ -26,8 +26,8 @@ public class FuzzyMatcher {
     public double getJaroWinklerSimilarity(String customerName,
                                            String sanctionsName) {
 
-        String a = normalizer.normalize(customerName);
-        String b = normalizer.normalize(sanctionsName);
+        String a = normalizer.normalize(stringToEmptyStringIfInvalid(customerName));
+        String b = normalizer.normalize(stringToEmptyStringIfInvalid(sanctionsName));
 
         if (a.isEmpty() || b.isEmpty()) {
             return 0.00;
@@ -46,7 +46,7 @@ public class FuzzyMatcher {
         double maxSimilarity = 0.00;
 
         for (SanctionIndividualNationality e : sanctionNationalities) {
-            double currentSimilarity = customerNationality.equalsIgnoreCase(e.getNationality()) ? 1.00 : 0.00;
+            double currentSimilarity = customerNationality.equalsIgnoreCase(stringToEmptyStringIfInvalid(e.getNationality())) ? 1.00 : 0.00;
             maxSimilarity = Math.max(maxSimilarity, currentSimilarity);
         }
 
@@ -63,15 +63,15 @@ public class FuzzyMatcher {
             return 0.00;
         }
         double maxSimilarity = 0.00;
-
+        nidNo=stringToEmptyStringIfInvalid(nidNo).trim();
+        passNo=stringToEmptyStringIfInvalid(passNo).trim();
         for (SanctionIndividualDocument e : sanctionDocuments) {
             double currentSimilarity = 0.00;
-            assert nidNo != null;
             if(!nidNo.isBlank()){
-               currentSimilarity = nidNo.equalsIgnoreCase(e.getNumber()) ? 1.00 : 0.00;
+               currentSimilarity = nidNo.equalsIgnoreCase(stringToEmptyStringIfInvalid(e.getNumber())) ? 1.00 : 0.00;
            }
             if(!passNo.isBlank()){
-                currentSimilarity = passNo.equalsIgnoreCase(e.getNumber()) ? 1.00 : 0.00;
+                currentSimilarity = passNo.equalsIgnoreCase(stringToEmptyStringIfInvalid(e.getNumber())) ? 1.00 : 0.00;
             }
 
             maxSimilarity = Math.max(maxSimilarity, currentSimilarity);
@@ -89,22 +89,22 @@ public class FuzzyMatcher {
 
         StringBuilder customerAddressBuild = new StringBuilder();
         customerAddressBuild
-                .append(customerAddress.getRoad_or_block())
-                .append(customerAddress.getVillage_or_area())
-                .append(customerAddress.getPost_code())
-                .append(customerAddress.getPolice_station())
-                .append(customerAddress.getUpazila())
-                .append(customerAddress.getDistrict())
-                .append(customerAddress.getDivision_or_state())
-                .append(customerAddress.getCountry());
+                .append(stringToEmptyStringIfInvalid(customerAddress.getRoad_or_block()))
+                .append(stringToEmptyStringIfInvalid(customerAddress.getVillage_or_area()))
+                .append(stringToEmptyStringIfInvalid(customerAddress.getPost_code()))
+                .append(stringToEmptyStringIfInvalid(customerAddress.getPolice_station()))
+                .append(stringToEmptyStringIfInvalid(customerAddress.getUpazila()))
+                .append(stringToEmptyStringIfInvalid(customerAddress.getDistrict()))
+                .append(stringToEmptyStringIfInvalid(customerAddress.getDivision_or_state()))
+                .append(stringToEmptyStringIfInvalid(customerAddress.getCountry()));
 
         double maxSimilarity = 0.00;
         for (SanctionAddress e : sanctionAddresses) {
-            String sanctionAddressBuilder = e.getStreet() +
-                    e.getZip_code() +
-                    e.getState_province() +
-                    e.getCity() +
-                    e.getCountry();
+            String sanctionAddressBuilder = stringToEmptyStringIfInvalid(e.getStreet()) +
+                    stringToEmptyStringIfInvalid(e.getZip_code()) +
+                    stringToEmptyStringIfInvalid(e.getState_province()) +
+                    stringToEmptyStringIfInvalid(e.getCity()) +
+                    stringToEmptyStringIfInvalid(e.getCountry());
 
             double currentSimilarity = getJaroWinklerSimilarity(customerAddressBuild.toString(), sanctionAddressBuilder);
             maxSimilarity = Math.max(maxSimilarity, currentSimilarity);
@@ -121,22 +121,22 @@ public class FuzzyMatcher {
 
         StringBuilder customerAddressBuild = new StringBuilder();
         customerAddressBuild
-                .append(customerAddress.getRoad_or_block())
-                .append(customerAddress.getVillage_or_area())
-                .append(customerAddress.getPost_code())
-                .append(customerAddress.getPolice_station())
-                .append(customerAddress.getUpazila())
-                .append(customerAddress.getDistrict())
-                .append(customerAddress.getDivision_or_state())
-                .append(customerAddress.getCountry());
+                .append(stringToEmptyStringIfInvalid(customerAddress.getRoad_or_block()))
+                .append(stringToEmptyStringIfInvalid(customerAddress.getVillage_or_area()))
+                .append(stringToEmptyStringIfInvalid(customerAddress.getPost_code()))
+                .append(stringToEmptyStringIfInvalid(customerAddress.getPolice_station()))
+                .append(stringToEmptyStringIfInvalid(customerAddress.getUpazila()))
+                .append(stringToEmptyStringIfInvalid(customerAddress.getDistrict()))
+                .append(stringToEmptyStringIfInvalid(customerAddress.getDivision_or_state()))
+                .append(stringToEmptyStringIfInvalid(customerAddress.getCountry()));
 
         double maxSimilarity = 0.00;
         for (SanctionAddress e : sanctionAddresses) {
-            String sanctionAddressBuilder = e.getStreet() +
-                    e.getZip_code() +
-                    e.getState_province() +
-                    e.getCity() +
-                    e.getCountry();
+            String sanctionAddressBuilder = stringToEmptyStringIfInvalid(e.getStreet()) +
+                    stringToEmptyStringIfInvalid(e.getZip_code()) +
+                    stringToEmptyStringIfInvalid(e.getState_province()) +
+                    stringToEmptyStringIfInvalid(e.getCity()) +
+                    stringToEmptyStringIfInvalid(e.getCountry());
 
             double currentSimilarity = getJaroWinklerSimilarity(customerAddressBuild.toString(), sanctionAddressBuilder);
             maxSimilarity = Math.max(maxSimilarity, currentSimilarity);
@@ -153,16 +153,16 @@ public class FuzzyMatcher {
         }
 
         StringBuilder customerAddressBuild = new StringBuilder();
-        customerAddressBuild.append(customerAddress.getDistrict())
-                .append(customerAddress.getDivision_or_state())
-                .append(customerAddress.getCountry());
+        customerAddressBuild.append(stringToEmptyStringIfInvalid(customerAddress.getDistrict()))
+                .append(stringToEmptyStringIfInvalid(customerAddress.getDivision_or_state()))
+                .append(stringToEmptyStringIfInvalid(customerAddress.getCountry()));
 
         double maxSimilarity = 0.00;
         for (SanctionIndividualPlaceOfBirth e : sanctionPOBs) {
-            String sanctionPOBBuilder = e.getState_province() +
-                    e.getCity() +
-                    e.getCountry() +
-                    customerAddress.getDivision_or_state();
+            String sanctionPOBBuilder = stringToEmptyStringIfInvalid(e.getState_province()) +
+                    stringToEmptyStringIfInvalid(e.getCity()) +
+                    stringToEmptyStringIfInvalid(e.getCountry()) +
+                    stringToEmptyStringIfInvalid(customerAddress.getDivision_or_state());
 
             double currentSimilarity = getJaroWinklerSimilarity(customerAddressBuild.toString(), sanctionPOBBuilder);
             maxSimilarity = Math.max(maxSimilarity, currentSimilarity);
@@ -180,6 +180,7 @@ public class FuzzyMatcher {
             }
             double maxSimilarity = 0.00;
             for (SanctionIndividualDateOfBirth e : sanctionDobs) {
+                e=stringToEmptyStringIfDOBNull(e);
 
                 double currentSimilarity = 0.00;
                 switch (e.getType_of_date()) {
@@ -226,6 +227,19 @@ public class FuzzyMatcher {
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
+    }
+    public static String stringToEmptyStringIfInvalid(String value) {
+        return value == null || value.isBlank() ? "" : value;
+    }
+
+    public static SanctionIndividualDateOfBirth stringToEmptyStringIfDOBNull(SanctionIndividualDateOfBirth dob) {
+        dob.setType_of_date(stringToEmptyStringIfInvalid(dob.getType_of_date()));
+        dob.setDate(stringToEmptyStringIfInvalid(dob.getDate()));
+        dob.setFrom_year(stringToEmptyStringIfInvalid(dob.getFrom_year()));
+        dob.setTo_year(stringToEmptyStringIfInvalid(dob.getTo_year()));
+        dob.setYear(stringToEmptyStringIfInvalid(dob.getYear()));
+        dob.setNote(stringToEmptyStringIfInvalid(dob.getNote()));
+        return dob;
     }
 
 }

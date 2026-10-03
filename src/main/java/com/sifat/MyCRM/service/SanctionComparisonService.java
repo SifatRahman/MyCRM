@@ -207,7 +207,7 @@ public class SanctionComparisonService extends BaseService {
             return SanctionMatchStatus.HIGH_POTENTIAL_MATCHED.name();
         }
 
-        if (overallScore >= config.getIndividualPotentialMatchStartScore()) {
+        if (overallScore >= config.getEntityPotentialMatchStartScore()) {
             return SanctionMatchStatus.POTENTIAL_MATCHED.name();
         }
 

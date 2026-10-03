@@ -47,9 +47,9 @@ public class AMLSanctionConfigurationService {
                         .individualPotentialMatchStartScore(0.70)
                         .individualSanctionClearTillScore(0.65)
 
-                        .entityHighRiskStartScore(0.92)
-                        .entityPotentialMatchStartScore(0.85)
-                        .entitySanctionClearTillScore(0.75)
+                        .entityHighRiskStartScore(0.95)
+                        .entityPotentialMatchStartScore(0.88)
+                        .entitySanctionClearTillScore(0.78)
                         .build();
 
         return repository.save(config);
